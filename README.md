@@ -4,10 +4,10 @@
 
 ---
 
-## 🚀 프로젝트 개요
+## 프로젝트 개요
 현대인들의 정신건강 문제를 조기에 발견하고 관리할 수 있도록 돕기 위해 기획되었습니다. 사용자의 일기, 심리 검사(PHQ-9, GAD-7) 데이터를 AI가 분석하여 정기적인 리포트를 생성하며, 필요시 전문의(의사)와 연결할 수 있는 가교 역할을 수행합니다.
 
-## 🛠 기술 스택
+## 기술 스택
 - **Language**: Java 21
 - **Framework**: Spring Boot 4.0.4
 - **Security**: Spring Security, JWT (JSON Web Token)
@@ -15,8 +15,8 @@
 - **Build Tool**: Gradle
 - **Authentication**: Google OAuth2 (Android ID Token Verification)
 
-## ✨ 핵심 구현 기능 (현재 완료)
-### 🔐 안드로이드 중심 구글 로그인 및 인증 시스템
+## 핵심 구현 기능 (현재 완료)
+### 안드로이드 중심 구글 로그인 및 인증 시스템
 - **OAuth2 ID Token 검증**: 안드로이드 앱에서 발급받은 Google ID Token을 서버에서 직접 검증하는 보안 체계 구축.
 - **JWT 기반 Stateless 서버**: 세션을 사용하지 않는 RESTful한 보안 구조로, 모바일 앱 환경에 최적화된 토큰 인증 방식 적용.
 - **가입 여부 분기 처리**:
@@ -33,7 +33,7 @@
     - 의사와 환자 간의 데이터 공유 및 수락/거절 프로세스.
 - [ ] **챗봇 상담 서비스**: AI를 활용한 실시간 심리 상담 보조 기능.
 
-## 🧪 테스트 가이드 (Postman)
+## 테스트 가이드 (Postman)
 현재 **개발용 테스트 모드**가 활성화되어 있습니다.
 1. `POST /login` 또는 `POST /signup` 호출 시
 2. `idToken` 값에 `"test-token"`을 입력하면 실제 구글 로그인 없이 테스트 이메일(`test@example.com`)로 로그인을 진행할 수 있습니다.
