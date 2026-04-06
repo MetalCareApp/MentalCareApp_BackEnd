@@ -5,6 +5,8 @@ import com.remind.remind.domain.user.Role;
 import com.remind.remind.domain.user.User;
 import com.remind.remind.dto.user.SignupRequest;
 import com.remind.remind.dto.user.TokenResponse;
+import com.remind.remind.exception.BaseException;
+import com.remind.remind.exception.ErrorCode;
 import com.remind.remind.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,14 +25,11 @@ public class UserCommandService {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserQueryService userQueryService;
 
-    /**
-     * 구글 토큰과 추가 입력 정보를 받아 회원가입을 완료합니다.
-     */
     public TokenResponse signup(SignupRequest request) {
         String email = userQueryService.verifyGoogleIdToken(request.getIdToken());
 
         if (userRepository.existsByUsername(email)) {
-            throw new IllegalArgumentException("이미 가입된 사용자입니다.");
+            throw new BaseException(ErrorCode.ALREADY_REGISTERED);
         }
 
         User user = User.builder()
