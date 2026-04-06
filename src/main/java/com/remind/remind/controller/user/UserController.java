@@ -5,7 +5,8 @@ import com.remind.remind.domain.user.User;
 import com.remind.remind.dto.user.LoginRequest;
 import com.remind.remind.dto.user.SignupRequest;
 import com.remind.remind.dto.user.TokenResponse;
-import com.remind.remind.service.user.UserService;
+import com.remind.remind.service.user.UserCommandService;
+import com.remind.remind.service.user.UserQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserQueryService userQueryService;
+    private final UserCommandService userCommandService;
 
     /**
      * 회원가입 API
@@ -30,7 +32,7 @@ public class UserController {
      */
     @PostMapping("/signup")
     public ResponseEntity<TokenResponse> signup(@Valid @RequestBody SignupRequest request) {
-        TokenResponse response = userService.signup(request);
+        TokenResponse response = userCommandService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -41,7 +43,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
-            TokenResponse response = userService.login(request);
+            TokenResponse response = userQueryService.login(request);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             if ("NOT_FOUND_USER".equals(e.getMessage())) {
