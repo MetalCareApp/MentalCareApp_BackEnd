@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# 기획 및 설계 문서 (보안 및 관리용)
+캡스톤디자인(2)_제안서.docx
+gemini.md
+API 기획.csv
+ERD.png

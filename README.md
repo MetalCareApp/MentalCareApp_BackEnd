@@ -7,6 +7,9 @@
 ## 프로젝트 개요
 현대인들의 정신건강 문제를 조기에 발견하고 관리할 수 있도록 돕기 위해 기획되었습니다. 사용자의 일기, 심리 검사(PHQ-9, GAD-7) 데이터를 AI가 분석하여 정기적인 리포트를 생성하며, 필요시 전문의(의사)와 연결할 수 있는 가교 역할을 수행합니다.
 
+### 스키마 설계 (ERD)
+<img width="1407" height="1131" alt="Image" src="https://github.com/user-attachments/assets/e410c0ba-b535-496a-9ec7-716795d7e791" />
+
 ## 기술 스택
 - **Language**: Java 21
 - **Framework**: Spring Boot 4.0.4
