@@ -76,14 +76,14 @@ public class Diary {
     }
 
     public void update(String title, java.time.LocalDate diaryDate, String content, Emotion emotion, 
-                       LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken) {
+                       LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean isMedicationTaken) {
         this.title = title;
         this.diaryDate = diaryDate;
         this.content = content;
         this.emotion = emotion;
         this.sleepStartTime = sleepStartTime;
         this.sleepEndTime = sleepEndTime;
-        this.totalSleepMinutes = totalSleepMinutes;
         this.isMedicationTaken = isMedicationTaken;
+        this.totalSleepMinutes = java.time.Duration.between(sleepStartTime, sleepEndTime).toMinutes();
     }
 }

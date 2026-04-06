@@ -3,10 +3,10 @@ package com.remind.remind.controller.user;
 import com.remind.remind.config.security.PrincipalDetails;
 import com.remind.remind.domain.user.Role;
 import com.remind.remind.domain.user.User;
-import com.remind.remind.domain.user.Doctor;
 import com.remind.remind.dto.user.LoginRequest;
 import com.remind.remind.dto.user.SignupRequest;
 import com.remind.remind.dto.user.TokenResponse;
+import com.remind.remind.dto.user.UserMeResponse;
 import com.remind.remind.service.user.UserCommandService;
 import com.remind.remind.service.user.UserQueryService;
 import com.remind.remind.service.user.DoctorQueryService;
@@ -16,9 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,29 +39,36 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+    public ResponseEntity<UserMeResponse> getMyInfo(@AuthenticationPrincipal PrincipalDetails principalDetails) {
         if (principalDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 없습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         
         User user = principalDetails.getUser();
-        Map<String, Object> response = new HashMap<>();
-        response.put("nickname", user.getNickname());
-        response.put("role", user.getRole().name());
-        response.put("username", user.getUsername());
+        UserMeResponse.UserMeResponseBuilder responseBuilder = UserMeResponse.builder()
+                .nickname(user.getNickname())
+                .role(user.getRole().name())
+                .username(user.getUsername());
 
-        if (user.getRole() == Role.DOCTOR) {
+        // 의사일 경우 상세 정보 추가
+        if (user.isDoctor()) {
             doctorQueryService.findByUserId(user.getId()).ifPresent(doctor -> {
-                Map<String, Object> hospitalInfo = new HashMap<>();
-                hospitalInfo.put("name", doctor.getHospital().getName());
-                hospitalInfo.put("address", doctor.getHospital().getAddress());
-                hospitalInfo.put("phoneNumber", doctor.getHospital().getPhoneNumber());
+                UserMeResponse.HospitalInfoResponse hospital = UserMeResponse.HospitalInfoResponse.builder()
+                        .name(doctor.getHospital().getName())
+                        .address(doctor.getHospital().getAddress())
+                        .phoneNumber(doctor.getHospital().getPhoneNumber())
+                        .build();
+
+                UserMeResponse.DoctorInfoResponse doctorInfo = UserMeResponse.DoctorInfoResponse.builder()
+                        .specialization(doctor.getSpecialization())
+                        .hospital(hospital)
+                        .patientCount(doctor.getPatients() != null ? doctor.getPatients().size() : 0)
+                        .build();
                 
-                response.put("hospital", hospitalInfo);
-                response.put("specialization", doctor.getSpecialization());
+                responseBuilder.doctorInfo(doctorInfo);
             });
         }
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(responseBuilder.build());
     }
 }

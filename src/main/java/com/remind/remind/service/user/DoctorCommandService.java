@@ -31,26 +31,17 @@ public class DoctorCommandService {
      * 의사로 전환(Upgrade) 및 선택적으로 첫 환자 연결
      */
     public TokenResponse signup(Long currentUserId, DoctorSignupRequest request) {
-        // 1. 현재 사용자 조회
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        // 2. 이미 의사인 경우 중복 방지
-        if (user.getRole() == Role.DOCTOR) {
+        if (user.isDoctor()) {
             throw new BaseException(ErrorCode.ALREADY_REGISTERED);
         }
 
-        // 3. 병원 정보 처리
-        Hospital hospital = hospitalRepository.findByNameAndAddress(request.getHospitalName(), request.getHospitalAddress())
-                .orElseGet(() -> hospitalRepository.save(
-                        Hospital.builder()
-                                .name(request.getHospitalName())
-                                .address(request.getHospitalAddress())
-                                .phoneNumber(request.getHospitalPhoneNumber())
-                                .build()
-                ));
+        // 1. 병원 데이터 정제 및 조회/생성
+        Hospital hospital = findOrCreateHospital(request.getHospitalName(), request.getHospitalAddress(), request.getHospitalPhoneNumber());
 
-        // 4. 역할 업그레이드 및 Doctor 프로필 생성
+        // 2. 역할 승격 및 Doctor 프로필 생성
         user.promoteToDoctor();
         Doctor doctor = Doctor.builder()
                 .user(user)
@@ -60,25 +51,54 @@ public class DoctorCommandService {
 
         Doctor savedDoctor = doctorRepository.save(doctor);
 
-        // 5. 환자 연결 시도 (입력된 경우에만 진행)
+        // 3. 환자 연결 시도 (입력된 경우에만 진행)
         if (StringUtils.hasText(request.getPatientUsername())) {
-            User patient = userRepository.findByUsername(request.getPatientUsername())
-                    .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
-
-            DoctorPatient mapping = DoctorPatient.builder()
-                    .doctor(savedDoctor)
-                    .patient(patient)
-                    .status(MappingStatus.PENDING)
-                    .build();
-
-            doctorPatientRepository.save(mapping);
+            requestPatientMapping(savedDoctor, request.getPatientUsername().trim());
         }
 
-        // 6. 역할이 바뀌었으므로 새로운 토큰 발급
+        // 4. 역할 승격 토큰 발급
         String token = jwtTokenProvider.createToken(user.getId(), user.getUsername(), user.getRole().name());
         return TokenResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
                 .build();
+    }
+
+    /**
+     * 환자 매핑 요청 로직 (재사용을 위해 분리)
+     */
+    public void requestPatientMapping(Doctor doctor, String patientEmail) {
+        if (doctor.getUser().getUsername().equalsIgnoreCase(patientEmail)) {
+            throw new BaseException(ErrorCode.INVALID_PATIENT);
+        }
+
+        User patient = userRepository.findByUsername(patientEmail)
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        if (doctorPatientRepository.existsByDoctorIdAndPatientId(doctor.getId(), patient.getId())) {
+            throw new BaseException(ErrorCode.ALREADY_MAPPED);
+        }
+
+        DoctorPatient mapping = DoctorPatient.builder()
+                .doctor(doctor)
+                .patient(patient)
+                .status(MappingStatus.PENDING)
+                .build();
+
+        doctorPatientRepository.save(mapping);
+    }
+
+    private Hospital findOrCreateHospital(String name, String address, String phone) {
+        String trimmedName = name.trim();
+        String trimmedAddress = address.trim();
+
+        return hospitalRepository.findByNameAndAddress(trimmedName, trimmedAddress)
+                .orElseGet(() -> hospitalRepository.save(
+                        Hospital.builder()
+                                .name(trimmedName)
+                                .address(trimmedAddress)
+                                .phoneNumber(phone)
+                                .build()
+                ));
     }
 }
