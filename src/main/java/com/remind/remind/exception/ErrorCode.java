@@ -1,0 +1,24 @@
+package com.remind.remind.exception;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@RequiredArgsConstructor
+public enum ErrorCode {
+
+    // User 관련
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "가입되지 않은 사용자입니다. 회원가입 화면으로 이동하세요."),
+    ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "U002", "이미 가입된 사용자입니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "U003", "유효하지 않은 구글 토큰입니다."),
+    TOKEN_VERIFICATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "U004", "구글 토큰 검증 중 오류가 발생했습니다."),
+
+    // 공통
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "잘못된 입력값입니다."),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C002", "서버 내부 오류가 발생했습니다.");
+
+    private final HttpStatus status;
+    private final String code;
+    private final String message;
+}
