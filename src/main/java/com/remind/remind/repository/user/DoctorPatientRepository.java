@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface DoctorPatientRepository extends JpaRepository<DoctorPatient, Long> {
     List<DoctorPatient> findAllByDoctorId(Long doctorId);
+    boolean existsByDoctorIdAndPatientId(Long doctorId, Long patientId);
 }
