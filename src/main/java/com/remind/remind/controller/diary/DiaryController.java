@@ -3,6 +3,7 @@ package com.remind.remind.controller.diary;
 import com.remind.remind.config.security.PrincipalDetails;
 import com.remind.remind.dto.diary.DiaryCreateRequest;
 import com.remind.remind.dto.diary.DiaryResponse;
+import com.remind.remind.dto.diary.DiaryUpdateRequest;
 import com.remind.remind.service.diary.DiaryCommandService;
 import com.remind.remind.service.diary.DiaryQueryService;
 import jakarta.validation.Valid;
@@ -29,6 +30,16 @@ public class DiaryController {
         
         DiaryResponse response = diaryCommandService.createDiary(request, principalDetails.getUser().getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<DiaryResponse> updateDiary(
+            @PathVariable Long id,
+            @RequestBody DiaryUpdateRequest request,
+            @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        
+        DiaryResponse response = diaryCommandService.updateDiary(id, request, principalDetails.getUser().getId());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id:[0-9]+}")

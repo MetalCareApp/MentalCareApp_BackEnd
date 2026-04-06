@@ -6,6 +6,7 @@ import com.remind.remind.domain.user.Role;
 import com.remind.remind.domain.user.User;
 import com.remind.remind.dto.diary.DiaryCreateRequest;
 import com.remind.remind.dto.diary.DiaryResponse;
+import com.remind.remind.dto.diary.DiaryUpdateRequest;
 import com.remind.remind.repository.diary.DiaryRepository;
 import com.remind.remind.repository.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,5 +80,57 @@ class DiaryCommandServiceTest {
         assertThat(response.getSleepEndTime()).isEqualTo(sleepEnd);
         assertThat(response.getTotalSleepMinutes()).isEqualTo(480L);
         assertThat(response.isMedicationTaken()).isTrue();
+    }
+
+    @Test
+    @DisplayName("일기 수정 성공")
+    void updateDiary_Success() {
+        // given
+        Long userId = 1L;
+        Long diaryId = 1L;
+
+        User user = User.builder()
+                .username("test@gmail.com")
+                .nickname("tester")
+                .role(Role.USER)
+                .build();
+        ReflectionTestUtils.setField(user, "id", userId);
+
+        Diary diary = Diary.builder()
+                .diaryDate(LocalDate.of(2024, 1, 1))
+                .title("원래 제목")
+                .content("원래 내용")
+                .emotion(Emotion.GOOD)
+                .sleepStartTime(LocalDateTime.of(2024, 1, 1, 23, 0))
+                .sleepEndTime(LocalDateTime.of(2024, 1, 2, 7, 0))
+                .totalSleepMinutes(480L)
+                .isMedicationTaken(true)
+                .user(user)
+                .build();
+
+        DiaryUpdateRequest request = new DiaryUpdateRequest(
+                LocalDate.of(2024, 1, 2),
+                "수정된 제목",
+                "수정된 내용",
+                Emotion.EXTREMELY_GOOD,
+                LocalDateTime.of(2024, 1, 2, 22, 0),
+                LocalDateTime.of(2024, 1, 3, 8, 0), // 10 hours = 600 minutes
+                false
+        );
+
+        given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+        // when
+        DiaryResponse response = diaryCommandService.updateDiary(diaryId, request, userId);
+
+        // then
+        assertThat(response.getDiaryDate()).isEqualTo(request.getDiaryDate());
+        assertThat(response.getTitle()).isEqualTo(request.getTitle());
+        assertThat(response.getContent()).isEqualTo(request.getContent());
+        assertThat(response.getEmotion()).isEqualTo(request.getEmotion());
+        assertThat(response.getSleepStartTime()).isEqualTo(request.getSleepStartTime());
+        assertThat(response.getSleepEndTime()).isEqualTo(request.getSleepEndTime());
+        assertThat(response.getTotalSleepMinutes()).isEqualTo(600L);
+        assertThat(response.isMedicationTaken()).isFalse();
     }
 }

@@ -34,7 +34,7 @@ public class Diary {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private Emotion emotion;
 
     @Column(nullable = false)
@@ -73,5 +73,17 @@ public class Diary {
         this.totalSleepMinutes = totalSleepMinutes;
         this.isMedicationTaken = isMedicationTaken;
         this.user = user;
+    }
+
+    public void update(java.time.LocalDate diaryDate, String title, String content, Emotion emotion, 
+                       LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken) {
+        this.diaryDate = diaryDate;
+        this.title = title;
+        this.content = content;
+        this.emotion = emotion;
+        this.sleepStartTime = sleepStartTime;
+        this.sleepEndTime = sleepEndTime;
+        this.totalSleepMinutes = totalSleepMinutes;
+        this.isMedicationTaken = isMedicationTaken;
     }
 }

@@ -14,6 +14,10 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "U003", "유효하지 않은 구글 토큰입니다."),
     TOKEN_VERIFICATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "U004", "구글 토큰 검증 중 오류가 발생했습니다."),
 
+    // Diary 관련
+    DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "D001", "존재하지 않는 일기입니다."),
+    DIARY_ACCESS_DENIED(HttpStatus.FORBIDDEN, "D002", "해당 일기에 대한 접근 권한이 없습니다."),
+
     // 공통
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "잘못된 입력값입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C002", "서버 내부 오류가 발생했습니다.");
