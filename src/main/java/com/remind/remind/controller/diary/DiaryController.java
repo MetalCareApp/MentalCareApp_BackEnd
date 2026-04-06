@@ -42,6 +42,15 @@ public class DiaryController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDiary(
+            @PathVariable Long id,
+            @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        
+        diaryCommandService.deleteDiary(id, principalDetails.getUser().getId());
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<DiaryResponse> getDiary(
             @PathVariable Long id,

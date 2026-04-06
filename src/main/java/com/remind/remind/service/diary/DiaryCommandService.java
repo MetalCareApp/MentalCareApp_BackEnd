@@ -81,4 +81,15 @@ public class DiaryCommandService {
 
         return DiaryResponse.from(diary);
     }
+
+    public void deleteDiary(Long diaryId, Long userId) {
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new BaseException(ErrorCode.DIARY_NOT_FOUND));
+
+        if (!diary.getUser().getId().equals(userId)) {
+            throw new BaseException(ErrorCode.DIARY_ACCESS_DENIED);
+        }
+
+        diaryRepository.delete(diary);
+    }
 }
