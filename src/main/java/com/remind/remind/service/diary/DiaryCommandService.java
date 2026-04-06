@@ -69,8 +69,8 @@ public class DiaryCommandService {
         }
 
         diary.update(
-                request.getDiaryDate() != null ? request.getDiaryDate() : diary.getDiaryDate(),
                 request.getTitle() != null ? request.getTitle() : diary.getTitle(),
+                request.getDiaryDate() != null ? request.getDiaryDate() : diary.getDiaryDate(),
                 request.getContent() != null ? request.getContent() : diary.getContent(),
                 request.getEmotion() != null ? request.getEmotion() : diary.getEmotion(),
                 start,
