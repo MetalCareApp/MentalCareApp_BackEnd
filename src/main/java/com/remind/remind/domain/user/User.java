@@ -58,4 +58,8 @@ public class User {
         this.birthDate = birthDate;
         this.gender = gender;
     }
+
+    public void promoteToDoctor() {
+        this.role = Role.DOCTOR;
+    }
 }
