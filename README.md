@@ -10,36 +10,43 @@
 ### 스키마 설계 (ERD)
 <img width="1407" height="1131" alt="Image" src="https://github.com/user-attachments/assets/e410c0ba-b535-496a-9ec7-716795d7e791" />
 
+### 아키텍처 원칙
+- **CQRS 패턴**: 서비스 계층을 Command(상태 변경)와 Query(조회)로 분리하여 유지보수성 강화.
+- **RESTful API**: 리소스 중심의 설계와 복수형(Plural) 엔드포인트 규칙 준수.
+- **전역 예외 처리**: `@RestControllerAdvice`를 통한 일관된 에러 응답 체계 구축.
+
 ## 기술 스택
 - **Language**: Java 21
-- **Framework**: Spring Boot 4.0.4
-- **Security**: Spring Security, JWT (JSON Web Token)
+- **Framework**: Spring Boot 3.4.1
+- **Security**: Spring Security, JWT (JSON Web Token), Google OAuth2
 - **Database**: MySQL 8.0
 - **Build Tool**: Gradle
-- **Authentication**: Google OAuth2 (Android ID Token Verification)
 
 ## 핵심 구현 기능 (현재 완료)
-### 안드로이드 중심 구글 로그인 및 인증 시스템
+### 1. 안드로이드 중심 구글 로그인 및 인증 시스템
 - **OAuth2 ID Token 검증**: 안드로이드 앱에서 발급받은 Google ID Token을 서버에서 직접 검증하는 보안 체계 구축.
 - **JWT 기반 Stateless 서버**: 세션을 사용하지 않는 RESTful한 보안 구조로, 모바일 앱 환경에 최적화된 토큰 인증 방식 적용.
-- **가입 여부 분기 처리**:
-    - 기존 유저: 즉시 로그인 및 JWT 발급
-    - 신규 유저: 404 응답을 통해 앱에서 추가 정보 입력(회원가입) 화면으로 유도
-- **보안 강화**: `application.properties`의 민감 정보(API Key, Secret 등)를 환경 변수로 분리하여 GitHub 유출 방지.
+
+### 2. 감정 일기 CRUD 시스템
+- **감정 분석 기반 일기**: 5단계 감정 체계와 수면 시간 자동 계산 로직이 포함된 일기 작성 기능.
+- **유연한 수정(PATCH)**: 부분 수정을 지원하여 사용자 편의성 증대.
+- **월별 목록 조회**: 특정 월의 일기 데이터를 한눈에 확인할 수 있는 대시보드 API 제공.
+
+### 3. 의사 전환 및 환자 매핑 시스템 (Chicken-and-Egg 해결)
+- **자율적 의사 승격**: 별도의 인증 절차 없이, 병원 정보를 기입하여 일반 유저에서 `DOCTOR` 역할로 즉시 전환 가능.
+- **선택적 환자 매핑**: 전환 시 관리할 환자의 ID를 입력하여 연결 요청(`PENDING`)을 즉시 발송 가능.
+- **권한 분리**: 의사 대시보드 접근 권한(즉시 부여)과 환자 상세 데이터 접근 권한(환자 수락 후 부여)을 분리하여 보안성 확보.
 
 ## 📅 향후 개발 계획
-- [ ] **AI 감정 일기**: 사용자가 작성한 일기를 분석하여 감정 상태 추출 및 시각화.
-- [ ] **심리 검사 시스템**: PHQ-9(우울증), GAD-7(불안장애) 검사 결과 서버 저장 및 분석.
 - [ ] **AI 리포트 생성**: 일기와 검사 결과를 종합하여 주간/월간 리포트 자동 생성.
-- [ ] **의사-환자 연동 시스템**: 
-    - 마이페이지 내 '의사 모드 전환' 기능.
-    - 의사와 환자 간의 데이터 공유 및 수락/거절 프로세스.
+- [ ] **심리 검사 시스템**: PHQ-9(우울증), GAD-7(불안장애) 검사 결과 서버 저장 및 분석.
+- [ ] **의사-환자 연동 심화**: 환자의 요청 수락/거절 프로세스 및 관리 환자 대시보드 완성.
 - [ ] **챗봇 상담 서비스**: AI를 활용한 실시간 심리 상담 보조 기능.
 
 ## 테스트 가이드 (Postman)
 현재 **개발용 테스트 모드**가 활성화되어 있습니다.
-1. `POST /login` 또는 `POST /signup` 호출 시
-2. `idToken` 값에 `"test-token"`을 입력하면 실제 구글 로그인 없이 테스트 이메일(`test@example.com`)로 로그인을 진행할 수 있습니다.
-3. 인증이 필요한 API(예: `GET /my`) 호출 시, 발급받은 `accessToken`을 `Authorization: Bearer <TOKEN>` 헤더에 포함하여 전송하세요.
+1. `POST /users/login` 또는 `POST /users/signup` 호출 시
+2. `idToken` 값에 `"test-token"` 또는 `"google_test_token_..."` 패턴을 입력하면 실제 구글 로그인 없이 테스트 이메일로 로그인을 진행할 수 있습니다. (중복 방지를 위해 패턴 뒤에 고유 문자열을 붙이는 것을 권장합니다.)
+3. 인증이 필요한 API(예: `GET /users/me`) 호출 시, 발급받은 `accessToken`을 `Authorization: Bearer <TOKEN>` 헤더에 포함하여 전송하세요.
 
 ---
