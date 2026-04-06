@@ -24,6 +24,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class DiaryCommandServiceTest {
@@ -132,5 +134,32 @@ class DiaryCommandServiceTest {
         assertThat(response.getSleepEndTime()).isEqualTo(request.getSleepEndTime());
         assertThat(response.getTotalSleepMinutes()).isEqualTo(600L);
         assertThat(response.isMedicationTaken()).isFalse();
+    }
+
+    @Test
+    @DisplayName("일기 삭제 성공")
+    void deleteDiary_Success() {
+        // given
+        Long userId = 1L;
+        Long diaryId = 1L;
+
+        User user = User.builder()
+                .username("test@gmail.com")
+                .nickname("tester")
+                .role(Role.USER)
+                .build();
+        ReflectionTestUtils.setField(user, "id", userId);
+
+        Diary diary = Diary.builder()
+                .user(user)
+                .build();
+
+        given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
+
+        // when
+        diaryCommandService.deleteDiary(diaryId, userId);
+
+        // then
+        verify(diaryRepository, times(1)).delete(diary);
     }
 }
