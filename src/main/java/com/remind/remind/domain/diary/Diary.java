@@ -24,11 +24,11 @@ public class Diary {
     @Column(name = "diary_id")
     private Long id;
 
-    @Column(nullable = false)
-    private java.time.LocalDate diaryDate;
-
     @Column(nullable = false, length = 100)
     private String title;
+
+    @Column(nullable = false)
+    private java.time.LocalDate diaryDate;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
@@ -62,10 +62,10 @@ public class Diary {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Diary(java.time.LocalDate diaryDate, String title, String content, Emotion emotion, LocalDateTime sleepStartTime, 
+    public Diary(String title, java.time.LocalDate diaryDate, String content, Emotion emotion, LocalDateTime sleepStartTime, 
                  LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken, User user) {
-        this.diaryDate = diaryDate;
         this.title = title;
+        this.diaryDate = diaryDate;
         this.content = content;
         this.emotion = emotion;
         this.sleepStartTime = sleepStartTime;
@@ -75,10 +75,10 @@ public class Diary {
         this.user = user;
     }
 
-    public void update(java.time.LocalDate diaryDate, String title, String content, Emotion emotion, 
+    public void update(String title, java.time.LocalDate diaryDate, String content, Emotion emotion, 
                        LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken) {
-        this.diaryDate = diaryDate;
         this.title = title;
+        this.diaryDate = diaryDate;
         this.content = content;
         this.emotion = emotion;
         this.sleepStartTime = sleepStartTime;
