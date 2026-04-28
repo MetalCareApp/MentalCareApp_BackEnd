@@ -62,4 +62,12 @@ public class User {
     public void promoteToDoctor() {
         this.role = Role.DOCTOR;
     }
+
+    public boolean isDoctor() {
+        return this.role == Role.DOCTOR;
+    }
+
+    public boolean isUser() {
+        return this.role == Role.USER;
+    }
 }
