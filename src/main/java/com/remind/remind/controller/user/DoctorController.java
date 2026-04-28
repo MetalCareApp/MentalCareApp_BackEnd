@@ -21,6 +21,9 @@ public class DoctorController {
 
     private final DoctorCommandService doctorCommandService;
 
+    /**
+     * 의사 회원가입 (승격)
+     */
     @PostMapping("/signup")
     public ResponseEntity<TokenResponse> signup(
             @Valid @RequestBody DoctorSignupRequest request,

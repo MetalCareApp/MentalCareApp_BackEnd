@@ -21,10 +21,12 @@ public enum ErrorCode {
     // Doctor 관련
     INVALID_PATIENT(HttpStatus.BAD_REQUEST, "DR001", "본인을 환자로 등록할 수 없습니다."),
     ALREADY_MAPPED(HttpStatus.BAD_REQUEST, "DR002", "이미 연결 요청이 진행 중이거나 등록된 환자입니다."),
+    MAPPING_NOT_FOUND(HttpStatus.NOT_FOUND, "DR003", "존재하지 않는 매칭 정보입니다."),
 
     // 공통
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "잘못된 입력값입니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C002", "서버 내부 오류가 발생했습니다.");
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "C002", "접근 권한이 없습니다."),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "서버 내부 오류가 발생했습니다.");
 
     private final HttpStatus status;
     private final String code;
