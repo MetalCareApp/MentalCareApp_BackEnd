@@ -46,8 +46,8 @@ public class UserQueryService {
 
     // 테스트용 및 구글 토큰 검증
     public String verifyGoogleIdToken(String idTokenString) {
-        // 테스트용 패턴 허용 (중복 방지를 위해 토큰값을 이메일에 포함)
-        if (idTokenString != null && (idTokenString.equals("test-token") || idTokenString.startsWith("google_test_token"))) {
+        // 테스트용 패턴 허용
+        if (idTokenString != null && (idTokenString.equals("test-token") || idTokenString.equals("test") || idTokenString.startsWith("google_test_token"))) {
             return idTokenString + "@example.com";
         }
 

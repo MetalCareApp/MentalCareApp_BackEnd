@@ -16,6 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.remind.remind.dto.user.DoctorPatientRequest;
+import com.remind.remind.dto.user.DoctorPatientResponse;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +30,51 @@ public class DoctorCommandService {
     private final HospitalRepository hospitalRepository;
     private final DoctorPatientRepository doctorPatientRepository;
     private final JwtTokenProvider jwtTokenProvider;
+
+    /**
+     * 의사가 환자에게 매칭 요청 전송
+     */
+    public DoctorPatientResponse requestMatching(Long currentUserId, DoctorPatientRequest request) {
+        Doctor doctor = doctorRepository.findByUserId(currentUserId)
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        return requestPatientMapping(doctor, request.getPatientEmail().trim());
+    }
+
+    /**
+     * 매칭 상태 변경 (수락/거절)
+     */
+    public DoctorPatientResponse updateMappingStatus(Long mappingId, MappingStatus status, Long currentUserId) {
+        DoctorPatient mapping = doctorPatientRepository.findById(mappingId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MAPPING_NOT_FOUND));
+
+        // 권한 체크: 수락/거절은 해당 환자만 가능
+        if (!mapping.getPatient().getId().equals(currentUserId)) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        mapping.updateStatus(status);
+        return DoctorPatientResponse.from(mapping);
+    }
+
+    /**
+     * 매칭 삭제 (연결 해제)
+     */
+    public void deleteMapping(Long mappingId, Long currentUserId) {
+        DoctorPatient mapping = doctorPatientRepository.findById(mappingId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MAPPING_NOT_FOUND));
+
+        // 권한 체크: 당사자(의사 또는 환자)만 삭제 가능
+        boolean isDoctorOwner = doctorRepository.findByUserId(currentUserId)
+                .map(d -> d.getId().equals(mapping.getDoctor().getId())).orElse(false);
+        boolean isPatientOwner = mapping.getPatient().getId().equals(currentUserId);
+
+        if (!isDoctorOwner && !isPatientOwner) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        doctorPatientRepository.delete(mapping);
+    }
 
     /**
      * 의사로 전환(Upgrade) 및 선택적으로 첫 환자 연결
@@ -67,7 +116,7 @@ public class DoctorCommandService {
     /**
      * 환자 매핑 요청 로직 (재사용을 위해 분리)
      */
-    public void requestPatientMapping(Doctor doctor, String patientEmail) {
+    public DoctorPatientResponse requestPatientMapping(Doctor doctor, String patientEmail) {
         if (doctor.getUser().getUsername().equalsIgnoreCase(patientEmail)) {
             throw new BaseException(ErrorCode.INVALID_PATIENT);
         }
@@ -85,7 +134,7 @@ public class DoctorCommandService {
                 .status(MappingStatus.PENDING)
                 .build();
 
-        doctorPatientRepository.save(mapping);
+        return DoctorPatientResponse.from(doctorPatientRepository.save(mapping));
     }
 
     private Hospital findOrCreateHospital(String name, String address, String phone) {
