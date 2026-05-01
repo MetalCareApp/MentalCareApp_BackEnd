@@ -33,8 +33,10 @@ public class DiaryCreateRequest {
 
     private boolean medicationTaken;
 
+    private String medicationReaction;
+
     public DiaryCreateRequest(LocalDate diaryDate, String title, String content, Emotion emotion, 
-                              LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean medicationTaken) {
+                              LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean medicationTaken, String medicationReaction) {
         this.diaryDate = diaryDate;
         this.title = title;
         this.content = content;
@@ -42,5 +44,6 @@ public class DiaryCreateRequest {
         this.sleepStartTime = sleepStartTime;
         this.sleepEndTime = sleepEndTime;
         this.medicationTaken = medicationTaken;
+        this.medicationReaction = medicationReaction;
     }
 }
