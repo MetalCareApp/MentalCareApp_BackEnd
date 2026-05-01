@@ -43,8 +43,16 @@ public class DoctorQueryService {
         Doctor doctor = doctorRepository.findByUserId(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        return doctorPatientRepository.findAllByDoctorId(doctor.getId()).stream()
-                .filter(m -> m.getStatus() == MappingStatus.ACCEPTED)
+        return doctorPatientRepository.findAllByDoctorIdAndStatus(doctor.getId(), MappingStatus.ACCEPTED).stream()
+                .map(DoctorPatientResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 환자의 담당 의사(수락 완료) 목록 조회
+     */
+    public List<DoctorPatientResponse> getAcceptedDoctors(Long userId) {
+        return doctorPatientRepository.findAllByPatientIdAndStatus(userId, MappingStatus.ACCEPTED).stream()
                 .map(DoctorPatientResponse::from)
                 .collect(Collectors.toList());
     }

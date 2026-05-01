@@ -4,15 +4,15 @@ import com.remind.remind.config.security.PrincipalDetails;
 import com.remind.remind.dto.examination.ExaminationCreateRequest;
 import com.remind.remind.dto.examination.ExaminationResponse;
 import com.remind.remind.service.examination.ExaminationCommandService;
+import com.remind.remind.service.examination.ExaminationQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +20,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExaminationController {
 
     private final ExaminationCommandService examinationCommandService;
+    private final ExaminationQueryService examinationQueryService;
+
+    @GetMapping
+    public ResponseEntity<List<ExaminationResponse>> getMyExaminations(
+            @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        
+        List<ExaminationResponse> response = examinationQueryService.getMyExaminations(principalDetails.getUser().getId());
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping("/phq-9")
     public ResponseEntity<ExaminationResponse> createPHQ9(
