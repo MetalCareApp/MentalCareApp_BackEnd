@@ -6,11 +6,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Emotion {
-    EXTREMELY_GOOD("매우 좋음", 5),
-    GOOD("좋음", 4),
-    NORMAL("보통", 3),
-    BAD("나쁨", 2),
-    EXTREMELY_BAD("매우 나쁨", 1);
+    GOOD("좋음", 5),
+    NORMAL("보통", 4),
+    DEPRESSED("우울", 3),
+    ANXIOUS("불안", 2),
+    ANGRY("화남", 1),
+    EXHAUSTED("지침", 0);
 
     private final String description;
     private final int score;

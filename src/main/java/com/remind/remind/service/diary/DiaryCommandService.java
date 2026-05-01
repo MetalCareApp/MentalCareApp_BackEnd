@@ -41,6 +41,7 @@ public class DiaryCommandService {
                 .sleepEndTime(request.getSleepEndTime())
                 .totalSleepMinutes(totalSleepMinutes)
                 .isMedicationTaken(request.isMedicationTaken())
+                .medicationReaction(request.getMedicationReaction())
                 .user(user)
                 .build();
 
@@ -63,9 +64,10 @@ public class DiaryCommandService {
         LocalDateTime start = request.getSleepStartTime() != null ? request.getSleepStartTime() : diary.getSleepStartTime();
         LocalDateTime end = request.getSleepEndTime() != null ? request.getSleepEndTime() : diary.getSleepEndTime();
         boolean medication = request.getMedicationTaken() != null ? request.getMedicationTaken() : diary.isMedicationTaken();
+        String reaction = request.getMedicationReaction() != null ? request.getMedicationReaction() : diary.getMedicationReaction();
 
         // 엔티티 내부에서 수면 시간 재계산 처리
-        diary.update(title, diaryDate, content, emotion, start, end, medication);
+        diary.update(title, diaryDate, content, emotion, start, end, medication, reaction);
 
         return DiaryResponse.from(diary);
     }

@@ -34,7 +34,7 @@ public class Diary {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 50)
     private Emotion emotion;
 
     @Column(nullable = false)
@@ -48,6 +48,9 @@ public class Diary {
 
     @Column(nullable = false)
     private boolean isMedicationTaken;
+
+    @Column(columnDefinition = "TEXT")
+    private String medicationReaction;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -63,7 +66,7 @@ public class Diary {
 
     @Builder
     public Diary(String title, java.time.LocalDate diaryDate, String content, Emotion emotion, LocalDateTime sleepStartTime, 
-                 LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken, User user) {
+                 LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken, String medicationReaction, User user) {
         this.title = title;
         this.diaryDate = diaryDate;
         this.content = content;
@@ -72,11 +75,12 @@ public class Diary {
         this.sleepEndTime = sleepEndTime;
         this.totalSleepMinutes = totalSleepMinutes;
         this.isMedicationTaken = isMedicationTaken;
+        this.medicationReaction = medicationReaction;
         this.user = user;
     }
 
     public void update(String title, java.time.LocalDate diaryDate, String content, Emotion emotion, 
-                       LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean isMedicationTaken) {
+                       LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean isMedicationTaken, String medicationReaction) {
         this.title = title;
         this.diaryDate = diaryDate;
         this.content = content;
@@ -84,6 +88,7 @@ public class Diary {
         this.sleepStartTime = sleepStartTime;
         this.sleepEndTime = sleepEndTime;
         this.isMedicationTaken = isMedicationTaken;
+        this.medicationReaction = medicationReaction;
         this.totalSleepMinutes = java.time.Duration.between(sleepStartTime, sleepEndTime).toMinutes();
     }
 }
