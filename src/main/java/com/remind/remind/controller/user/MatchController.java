@@ -77,9 +77,13 @@ public class MatchController {
     public ResponseEntity<List<DoctorPatientResponse>> getActiveMatches(
             @AuthenticationPrincipal PrincipalDetails principalDetails) {
         
-        // 현재는 의사의 환자 목록 조회 기능만 구현되어 있음 (필요 시 확장)
-        List<DoctorPatientResponse> responses = doctorQueryService.getAcceptedPatients(principalDetails.getUser().getId());
-        return ResponseEntity.ok(responses);
+        if (principalDetails.getUser().isDoctor()) {
+            List<DoctorPatientResponse> responses = doctorQueryService.getAcceptedPatients(principalDetails.getUser().getId());
+            return ResponseEntity.ok(responses);
+        } else {
+            List<DoctorPatientResponse> responses = doctorQueryService.getAcceptedDoctors(principalDetails.getUser().getId());
+            return ResponseEntity.ok(responses);
+        }
     }
 
     /**

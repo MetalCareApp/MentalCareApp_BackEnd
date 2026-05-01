@@ -54,7 +54,7 @@ class DiaryCommandServiceTest {
         LocalDateTime sleepStart = LocalDateTime.of(2024, 1, 1, 23, 0);
         LocalDateTime sleepEnd = LocalDateTime.of(2024, 1, 2, 7, 0); // 8 hours = 480 minutes
 
-        DiaryCreateRequest request = new DiaryCreateRequest(diaryDate, "제목", "내용", Emotion.GOOD, sleepStart, sleepEnd, true);
+        DiaryCreateRequest request = new DiaryCreateRequest(diaryDate, "제목", "내용", Emotion.GOOD, sleepStart, sleepEnd, true, "괜찮음");
         Diary diary = Diary.builder()
                 .diaryDate(request.getDiaryDate())
                 .title(request.getTitle())
@@ -64,6 +64,7 @@ class DiaryCommandServiceTest {
                 .sleepEndTime(request.getSleepEndTime())
                 .totalSleepMinutes(480L)
                 .isMedicationTaken(true)
+                .medicationReaction("괜찮음")
                 .user(user)
                 .build();
 
@@ -114,10 +115,11 @@ class DiaryCommandServiceTest {
                 LocalDate.of(2024, 1, 2),
                 "수정된 제목",
                 "수정된 내용",
-                Emotion.EXTREMELY_GOOD,
+                Emotion.NORMAL,
                 LocalDateTime.of(2024, 1, 2, 22, 0),
                 LocalDateTime.of(2024, 1, 3, 8, 0), // 10 hours = 600 minutes
-                false
+                false,
+                "반응 없음"
         );
 
         given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
