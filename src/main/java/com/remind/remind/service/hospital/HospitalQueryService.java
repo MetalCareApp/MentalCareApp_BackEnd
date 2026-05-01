@@ -23,10 +23,21 @@ public class HospitalQueryService {
     private final HospitalLikeRepository hospitalLikeRepository;
 
     /**
-     * 병원 전체 목록 조회
+     * 병원 전체 목록 및 검색/필터 조회
      */
-    public List<HospitalResponse> getAllHospitals(Long userId) {
-        List<Hospital> hospitals = hospitalRepository.findAll();
+    public List<HospitalResponse> getAllHospitals(Long userId, String name, String region) {
+        List<Hospital> hospitals;
+
+        if (name != null && region != null) {
+            hospitals = hospitalRepository.findByNameContainingAndAddressContaining(name, region);
+        } else if (name != null) {
+            hospitals = hospitalRepository.findByNameContaining(name);
+        } else if (region != null) {
+            hospitals = hospitalRepository.findByAddressContaining(region);
+        } else {
+            hospitals = hospitalRepository.findAll();
+        }
+
         return hospitals.stream()
                 .map(hospital -> {
                     boolean isLiked = hospitalLikeRepository.existsByUserIdAndHospitalId(userId, hospital.getId());
