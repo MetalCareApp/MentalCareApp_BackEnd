@@ -20,12 +20,15 @@ public class HospitalController {
     private final HospitalCommandService hospitalCommandService;
 
     /**
-     * 병원 전체 목록 조회
+     * 병원 전체 목록 조회 (검색 및 지역 필터 포함)
      */
     @GetMapping
     public ResponseEntity<List<HospitalResponse>> getAllHospitals(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String region,
             @AuthenticationPrincipal PrincipalDetails principalDetails) {
-        List<HospitalResponse> response = hospitalQueryService.getAllHospitals(principalDetails.getUser().getId());
+        List<HospitalResponse> response = hospitalQueryService.getAllHospitals(
+                principalDetails.getUser().getId(), name, region);
         return ResponseEntity.ok(response);
     }
 
