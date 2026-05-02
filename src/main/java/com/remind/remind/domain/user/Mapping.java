@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "doctor_patients")
-public class DoctorPatient {
+@Table(name = "mappings")
+public class Mapping {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +39,7 @@ public class DoctorPatient {
     private LocalDateTime createdAt;
 
     @Builder
-    public DoctorPatient(Doctor doctor, User patient, MappingStatus status) {
+    public Mapping(Doctor doctor, User patient, MappingStatus status) {
         this.doctor = doctor;
         this.patient = patient;
         this.status = status;

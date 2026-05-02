@@ -8,7 +8,7 @@ import com.remind.remind.dto.user.TokenResponse;
 import com.remind.remind.exception.BaseException;
 import com.remind.remind.exception.ErrorCode;
 import com.remind.remind.repository.hospital.HospitalRepository;
-import com.remind.remind.repository.user.DoctorPatientRepository;
+import com.remind.remind.repository.user.MappingRepository;
 import com.remind.remind.repository.user.DoctorRepository;
 import com.remind.remind.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import com.remind.remind.dto.user.DoctorPatientRequest;
-import com.remind.remind.dto.user.DoctorPatientResponse;
+import com.remind.remind.dto.user.MappingRequest;
+import com.remind.remind.dto.user.MappingResponse;
 import java.util.List;
 
 @Service
@@ -28,13 +28,13 @@ public class DoctorCommandService {
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
     private final HospitalRepository hospitalRepository;
-    private final DoctorPatientRepository doctorPatientRepository;
+    private final MappingRepository mappingRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 의사가 환자에게 매칭 요청 전송
      */
-    public DoctorPatientResponse requestMatching(Long currentUserId, DoctorPatientRequest request) {
+    public MappingResponse requestMatching(Long currentUserId, MappingRequest request) {
         Doctor doctor = doctorRepository.findByUserId(currentUserId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
@@ -44,8 +44,8 @@ public class DoctorCommandService {
     /**
      * 매칭 상태 변경 (수락/거절)
      */
-    public DoctorPatientResponse updateMappingStatus(Long mappingId, MappingStatus status, Long currentUserId) {
-        DoctorPatient mapping = doctorPatientRepository.findById(mappingId)
+    public MappingResponse updateMappingStatus(Long mappingId, MappingStatus status, Long currentUserId) {
+        Mapping mapping = mappingRepository.findById(mappingId)
                 .orElseThrow(() -> new BaseException(ErrorCode.MAPPING_NOT_FOUND));
 
         // 권한 체크: 수락/거절은 해당 환자만 가능
@@ -54,14 +54,14 @@ public class DoctorCommandService {
         }
 
         mapping.updateStatus(status);
-        return DoctorPatientResponse.from(mapping);
+        return MappingResponse.from(mapping);
     }
 
     /**
      * 매칭 삭제 (연결 해제)
      */
     public void deleteMapping(Long mappingId, Long currentUserId) {
-        DoctorPatient mapping = doctorPatientRepository.findById(mappingId)
+        Mapping mapping = mappingRepository.findById(mappingId)
                 .orElseThrow(() -> new BaseException(ErrorCode.MAPPING_NOT_FOUND));
 
         // 권한 체크: 당사자(의사 또는 환자)만 삭제 가능
@@ -73,7 +73,7 @@ public class DoctorCommandService {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
 
-        doctorPatientRepository.delete(mapping);
+        mappingRepository.delete(mapping);
     }
 
     /**
@@ -116,7 +116,7 @@ public class DoctorCommandService {
     /**
      * 환자 매핑 요청 로직 (재사용을 위해 분리)
      */
-    public DoctorPatientResponse requestPatientMapping(Doctor doctor, String patientEmail) {
+    public MappingResponse requestPatientMapping(Doctor doctor, String patientEmail) {
         if (doctor.getUser().getUsername().equalsIgnoreCase(patientEmail)) {
             throw new BaseException(ErrorCode.INVALID_PATIENT);
         }
@@ -124,17 +124,17 @@ public class DoctorCommandService {
         User patient = userRepository.findByUsername(patientEmail)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        if (doctorPatientRepository.existsByDoctorIdAndPatientId(doctor.getId(), patient.getId())) {
+        if (mappingRepository.existsByDoctorIdAndPatientId(doctor.getId(), patient.getId())) {
             throw new BaseException(ErrorCode.ALREADY_MAPPED);
         }
 
-        DoctorPatient mapping = DoctorPatient.builder()
+        Mapping mapping = Mapping.builder()
                 .doctor(doctor)
                 .patient(patient)
                 .status(MappingStatus.PENDING)
                 .build();
 
-        return DoctorPatientResponse.from(doctorPatientRepository.save(mapping));
+        return MappingResponse.from(mappingRepository.save(mapping));
     }
 
     private Hospital findOrCreateHospital(String name, String address, String phone) {
@@ -146,7 +146,7 @@ public class DoctorCommandService {
                         Hospital.builder()
                                 .name(trimmedName)
                                 .address(trimmedAddress)
-                                .phoneNumber(phone)
+                                .phone(phone)
                                 .build()
                 ));
     }

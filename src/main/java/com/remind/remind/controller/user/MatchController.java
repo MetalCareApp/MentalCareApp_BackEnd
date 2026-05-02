@@ -2,8 +2,8 @@ package com.remind.remind.controller.user;
 
 import com.remind.remind.config.security.PrincipalDetails;
 import com.remind.remind.domain.user.MappingStatus;
-import com.remind.remind.dto.user.DoctorPatientRequest;
-import com.remind.remind.dto.user.DoctorPatientResponse;
+import com.remind.remind.dto.user.MappingRequest;
+import com.remind.remind.dto.user.MappingResponse;
 import com.remind.remind.service.user.DoctorCommandService;
 import com.remind.remind.service.user.DoctorQueryService;
 import jakarta.validation.Valid;
@@ -27,11 +27,11 @@ public class MatchController {
      * 매칭 요청 전송 (의사 -> 환자)
      */
     @PostMapping
-    public ResponseEntity<DoctorPatientResponse> requestMatching(
+    public ResponseEntity<MappingResponse> requestMatching(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
-            @Valid @RequestBody DoctorPatientRequest request) {
+            @Valid @RequestBody MappingRequest request) {
         
-        DoctorPatientResponse response = doctorCommandService.requestMatching(principalDetails.getUser().getId(), request);
+        MappingResponse response = doctorCommandService.requestMatching(principalDetails.getUser().getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -39,10 +39,10 @@ public class MatchController {
      * 나에게 온 매칭 요청 목록 조회 (주로 환자용, 알림 근거 데이터)
      */
     @GetMapping("/requests")
-    public ResponseEntity<List<DoctorPatientResponse>> getReceivedRequests(
+    public ResponseEntity<List<MappingResponse>> getReceivedRequests(
             @AuthenticationPrincipal PrincipalDetails principalDetails) {
         
-        List<DoctorPatientResponse> responses = doctorQueryService.getPatientRequests(principalDetails.getUser().getId());
+        List<MappingResponse> responses = doctorQueryService.getPatientRequests(principalDetails.getUser().getId());
         return ResponseEntity.ok(responses);
     }
 
@@ -50,11 +50,11 @@ public class MatchController {
      * 매칭 요청 수락
      */
     @PatchMapping("/{id}/accept")
-    public ResponseEntity<DoctorPatientResponse> acceptMatching(
+    public ResponseEntity<MappingResponse> acceptMatching(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @PathVariable("id") Long mappingId) {
         
-        DoctorPatientResponse response = doctorCommandService.updateMappingStatus(mappingId, MappingStatus.ACCEPTED, principalDetails.getUser().getId());
+        MappingResponse response = doctorCommandService.updateMappingStatus(mappingId, MappingStatus.ACCEPTED, principalDetails.getUser().getId());
         return ResponseEntity.ok(response);
     }
 
@@ -62,11 +62,11 @@ public class MatchController {
      * 매칭 요청 거절
      */
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<DoctorPatientResponse> rejectMatching(
+    public ResponseEntity<MappingResponse> rejectMatching(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @PathVariable("id") Long mappingId) {
         
-        DoctorPatientResponse response = doctorCommandService.updateMappingStatus(mappingId, MappingStatus.REJECTED, principalDetails.getUser().getId());
+        MappingResponse response = doctorCommandService.updateMappingStatus(mappingId, MappingStatus.REJECTED, principalDetails.getUser().getId());
         return ResponseEntity.ok(response);
     }
 
@@ -74,14 +74,14 @@ public class MatchController {
      * 활성화된 매칭 목록 조회 (의사: 관리 환자들 / 환자: 담당 의사들)
      */
     @GetMapping
-    public ResponseEntity<List<DoctorPatientResponse>> getActiveMatches(
+    public ResponseEntity<List<MappingResponse>> getActiveMatches(
             @AuthenticationPrincipal PrincipalDetails principalDetails) {
         
         if (principalDetails.getUser().isDoctor()) {
-            List<DoctorPatientResponse> responses = doctorQueryService.getAcceptedPatients(principalDetails.getUser().getId());
+            List<MappingResponse> responses = doctorQueryService.getAcceptedPatients(principalDetails.getUser().getId());
             return ResponseEntity.ok(responses);
         } else {
-            List<DoctorPatientResponse> responses = doctorQueryService.getAcceptedDoctors(principalDetails.getUser().getId());
+            List<MappingResponse> responses = doctorQueryService.getAcceptedDoctors(principalDetails.getUser().getId());
             return ResponseEntity.ok(responses);
         }
     }

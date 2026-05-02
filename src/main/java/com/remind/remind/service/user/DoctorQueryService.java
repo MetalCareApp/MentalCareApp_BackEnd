@@ -5,13 +5,13 @@ import com.remind.remind.domain.user.MappingStatus;
 import com.remind.remind.exception.BaseException;
 import com.remind.remind.exception.ErrorCode;
 import com.remind.remind.repository.user.DoctorRepository;
-import com.remind.remind.repository.user.DoctorPatientRepository;
+import com.remind.remind.repository.user.MappingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import com.remind.remind.dto.user.DoctorPatientResponse;
+import com.remind.remind.dto.user.MappingResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class DoctorQueryService {
 
     private final DoctorRepository doctorRepository;
-    private final DoctorPatientRepository doctorPatientRepository;
+    private final MappingRepository mappingRepository;
 
     public Optional<Doctor> findByUserId(Long userId) {
         return doctorRepository.findByUserId(userId);
@@ -30,30 +30,30 @@ public class DoctorQueryService {
     /**
      * 환자에게 온 매칭 요청 목록 조회
      */
-    public List<DoctorPatientResponse> getPatientRequests(Long userId) {
-        return doctorPatientRepository.findAllByPatientId(userId).stream()
-                .map(DoctorPatientResponse::from)
+    public List<MappingResponse> getPatientRequests(Long userId) {
+        return mappingRepository.findAllByPatientId(userId).stream()
+                .map(MappingResponse::from)
                 .collect(Collectors.toList());
     }
 
     /**
      * 의사의 관리 환자(수락 완료) 목록 조회
      */
-    public List<DoctorPatientResponse> getAcceptedPatients(Long userId) {
+    public List<MappingResponse> getAcceptedPatients(Long userId) {
         Doctor doctor = doctorRepository.findByUserId(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        return doctorPatientRepository.findAllByDoctorIdAndStatus(doctor.getId(), MappingStatus.ACCEPTED).stream()
-                .map(DoctorPatientResponse::from)
+        return mappingRepository.findAllByDoctorIdAndStatus(doctor.getId(), MappingStatus.ACCEPTED).stream()
+                .map(MappingResponse::from)
                 .collect(Collectors.toList());
     }
 
     /**
      * 환자의 담당 의사(수락 완료) 목록 조회
      */
-    public List<DoctorPatientResponse> getAcceptedDoctors(Long userId) {
-        return doctorPatientRepository.findAllByPatientIdAndStatus(userId, MappingStatus.ACCEPTED).stream()
-                .map(DoctorPatientResponse::from)
+    public List<MappingResponse> getAcceptedDoctors(Long userId) {
+        return mappingRepository.findAllByPatientIdAndStatus(userId, MappingStatus.ACCEPTED).stream()
+                .map(MappingResponse::from)
                 .collect(Collectors.toList());
     }
 }
