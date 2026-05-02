@@ -1,6 +1,6 @@
 package com.remind.remind.dto.user;
 
-import com.remind.remind.domain.user.DoctorPatient;
+import com.remind.remind.domain.user.Mapping;
 import com.remind.remind.domain.user.MappingStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class DoctorPatientResponse {
+public class MappingResponse {
     private Long id;
     private Long doctorId;
     private String doctorName;
@@ -19,8 +19,8 @@ public class DoctorPatientResponse {
     private MappingStatus status;
     private LocalDateTime createdAt;
 
-    public static DoctorPatientResponse from(DoctorPatient mapping) {
-        return DoctorPatientResponse.builder()
+    public static MappingResponse from(Mapping mapping) {
+        return MappingResponse.builder()
                 .id(mapping.getId())
                 .doctorId(mapping.getDoctor().getId())
                 .doctorName(mapping.getDoctor().getUser().getNickname())

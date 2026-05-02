@@ -22,6 +22,7 @@ public class HospitalLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "hospital_like_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

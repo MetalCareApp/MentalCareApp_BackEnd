@@ -28,17 +28,17 @@ public class Hospital {
     @Column(nullable = false)
     private String address;
 
-    @Column(length = 20)
-    private String phoneNumber;
+    @Column(name = "phone", length = 20)
+    private String phone;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    public Hospital(String name, String address, String phoneNumber) {
+    public Hospital(String name, String address, String phone) {
         this.name = name;
         this.address = address;
-        this.phoneNumber = phoneNumber;
+        this.phone = phone;
     }
 }
