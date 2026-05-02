@@ -14,7 +14,7 @@ public class HospitalResponse {
     private Long id;
     private String name;
     private String address;
-    private String phoneNumber;
+    private String phone;
     private boolean isLiked;
 
     public static HospitalResponse from(Hospital hospital, boolean isLiked) {
@@ -22,7 +22,7 @@ public class HospitalResponse {
                 .id(hospital.getId())
                 .name(hospital.getName())
                 .address(hospital.getAddress())
-                .phoneNumber(hospital.getPhoneNumber())
+                .phone(hospital.getPhone())
                 .isLiked(isLiked)
                 .build();
     }

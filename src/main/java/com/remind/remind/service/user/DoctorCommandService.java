@@ -88,7 +88,7 @@ public class DoctorCommandService {
         }
 
         // 1. 병원 데이터 정제 및 조회/생성
-        Hospital hospital = findOrCreateHospital(request.getHospitalName(), request.getHospitalAddress(), request.getHospitalPhoneNumber());
+        Hospital hospital = findOrCreateHospital(request.getHospitalName(), request.getHospitalAddress(), request.getHospitalPhone());
 
         // 2. 역할 승격 및 Doctor 프로필 생성
         user.promoteToDoctor();
