@@ -52,7 +52,7 @@
 ## 테스트 가이드 (Postman)
 현재 **개발용 테스트 모드**가 활성화되어 있습니다.
 1. `POST /users/login` 또는 `POST /users/signup` 호출 시
-2. `idToken` 값에 `"test-token"` 또는 `"google_test_token_..."` 패턴을 입력하면 실제 구글 로그인 없이 테스트 이메일로 로그인을 진행할 수 있습니다.
+2. `idToken` 값에 `"test"` 또는 `"google_test_token_..."` 패턴을 입력하면 실제 구글 로그인 없이 테스트 이메일로 로그인을 진행할 수 있습니다.
 3. 인증이 필요한 API 호출 시, 발급받은 `accessToken`을 `Authorization: Bearer <TOKEN>` 헤더에 포함하여 전송하세요.
 
 ---

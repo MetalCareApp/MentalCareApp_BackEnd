@@ -15,17 +15,17 @@ public class DoctorSignupRequest {
     @NotBlank(message = "병원 주소는 필수입니다.")
     private String hospitalAddress;
 
-    private String hospitalPhoneNumber;
+    private String hospitalPhone;
     private String specialization;
 
     // 첫 연결 환자 정보 (선택 사항)
     private String patientUsername;
 
-    public DoctorSignupRequest(String hospitalName, String hospitalAddress, String hospitalPhoneNumber, 
+    public DoctorSignupRequest(String hospitalName, String hospitalAddress, String hospitalPhone, 
                                String specialization, String patientUsername) {
         this.hospitalName = hospitalName;
         this.hospitalAddress = hospitalAddress;
-        this.hospitalPhoneNumber = hospitalPhoneNumber;
+        this.hospitalPhone = hospitalPhone;
         this.specialization = specialization;
         this.patientUsername = patientUsername;
     }

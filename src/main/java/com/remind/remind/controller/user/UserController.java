@@ -56,7 +56,7 @@ public class UserController {
                 UserMeResponse.HospitalInfoResponse hospital = UserMeResponse.HospitalInfoResponse.builder()
                         .name(doctor.getHospital().getName())
                         .address(doctor.getHospital().getAddress())
-                        .phoneNumber(doctor.getHospital().getPhoneNumber())
+                        .phone(doctor.getHospital().getPhone())
                         .build();
 
                 UserMeResponse.DoctorInfoResponse doctorInfo = UserMeResponse.DoctorInfoResponse.builder()

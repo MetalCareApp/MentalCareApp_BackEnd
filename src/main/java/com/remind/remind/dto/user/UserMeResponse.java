@@ -26,6 +26,6 @@ public class UserMeResponse {
     public static class HospitalInfoResponse {
         private String name;
         private String address;
-        private String phoneNumber;
+        private String phone;
     }
 }
