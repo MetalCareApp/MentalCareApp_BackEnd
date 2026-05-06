@@ -1,9 +1,11 @@
 package com.remind.remind.controller.report;
 
 import com.remind.remind.config.security.PrincipalDetails;
+import com.remind.remind.dto.report.ReportCreateRequest;
 import com.remind.remind.dto.report.ReportResponse;
 import com.remind.remind.service.report.ReportCommandService;
 import com.remind.remind.service.report.ReportQueryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +26,10 @@ public class ReportController {
      * AI 리포트 생성
      */
     @PostMapping
-    public ResponseEntity<ReportResponse> createReport(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-        ReportResponse response = reportCommandService.createAiReport(principalDetails.getUser().getId());
+    public ResponseEntity<ReportResponse> createReport(
+            @AuthenticationPrincipal PrincipalDetails principalDetails,
+            @Valid @RequestBody ReportCreateRequest request) {
+        ReportResponse response = reportCommandService.createAiReport(principalDetails.getUser().getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

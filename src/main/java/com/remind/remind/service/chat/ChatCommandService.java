@@ -38,55 +38,64 @@ public class ChatCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        boolean hasRisk = detectRisk(request.getMessage());
+        boolean isRisk = detectRisk(request.getMessage());
 
         ChatMessage message = ChatMessage.builder()
                 .user(user)
                 .role(ChatMessageRole.USER)
-                .message(request.getMessage())
-                .hasRisk(hasRisk)
+                .content(request.getMessage())
+                .isRisk(isRisk)
                 .build();
 
         return ChatResponse.from(chatMessageRepository.save(message));
     }
 
     public ChatResponse callAiAndSaveResponse(Long userId, String userQuestion) {
-        // AI 서버로 보낼 요청 데이터 구성 (session_id는 사용자 ID 사용)
-        Map<String, String> aiRequest = Map.of(
-                "question", userQuestion,
-                "session_id", String.valueOf(userId)
-        );
+        // AI 서버로 보낼 요청 데이터 구성 (session_id는 사용자 ID 사용 - int/long 형식)
+        Map<String, Object> aiRequest = new java.util.HashMap<>();
+        aiRequest.put("question", userQuestion);
+        aiRequest.put("session_id", userId);
 
         try {
-            // AI 서버 호출
+            // AI 서버 호출 (POST /ai/chat)
             Map<String, Object> aiResponse = restTemplate.postForObject(chatbotApiUrl, aiRequest, Map.class);
             
             String answer = "죄송합니다. 답변을 생성하지 못했습니다.";
-            if (aiResponse != null && aiResponse.containsKey("answer")) {
-                answer = (String) aiResponse.get("answer");
-            } else if (aiResponse != null && aiResponse.containsKey("message")) {
-                answer = (String) aiResponse.get("message");
+            boolean isRisk = false;
+
+            if (aiResponse != null) {
+                // specification: AI서버 -> 백 { "answer": "...", "is_risk": boolean }
+                if (aiResponse.get("answer") != null) {
+                    answer = String.valueOf(aiResponse.get("answer"));
+                }
+                
+                if (aiResponse.get("is_risk") != null) {
+                    Object riskValue = aiResponse.get("is_risk");
+                    if (riskValue instanceof Boolean) {
+                        isRisk = (Boolean) riskValue;
+                    } else if (riskValue instanceof String) {
+                        isRisk = "T".equalsIgnoreCase((String) riskValue) || "true".equalsIgnoreCase((String) riskValue);
+                    }
+                }
             }
 
-            return saveAssistantMessage(userId, answer);
+            return saveAssistantMessage(userId, answer, isRisk);
         } catch (Exception e) {
+            System.err.println("AI Chatbot Error: " + e.getMessage());
             // AI 서버 호출 실패 시 기본 답변 저장
-            return saveAssistantMessage(userId, "현재 AI 상담이 원활하지 않습니다. 잠시 후 다시 시도해주세요.");
+            return saveAssistantMessage(userId, "현재 AI 상담이 원활하지 않습니다. 잠시 후 다시 시도해주세요.", false);
         }
     }
 
-    public ChatResponse saveAssistantMessage(Long userId, String content) {
+    public ChatResponse saveAssistantMessage(Long userId, String content, boolean isRisk) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
-
-        // AI 답변에서도 위험 요소가 있을 수 있으므로 체크
-        boolean hasRisk = detectRisk(content);
 
         ChatMessage message = ChatMessage.builder()
                 .user(user)
                 .role(ChatMessageRole.ASSISTANT)
-                .message(content)
-                .hasRisk(hasRisk)
+                .content(content)
+                .isRisk(isRisk)
                 .build();
 
         return ChatResponse.from(chatMessageRepository.save(message));

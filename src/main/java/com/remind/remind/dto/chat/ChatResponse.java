@@ -12,16 +12,16 @@ import java.time.LocalDateTime;
 public class ChatResponse {
     private Long id;
     private ChatMessageRole role;
-    private String message;
-    private boolean hasRisk;
+    private String content;
+    private boolean isRisk;
     private LocalDateTime createdAt;
 
     public static ChatResponse from(ChatMessage message) {
         return ChatResponse.builder()
                 .id(message.getId())
                 .role(message.getRole())
-                .message(message.getMessage())
-                .hasRisk(message.isHasRisk())
+                .content(message.getContent())
+                .isRisk(message.isRisk())
                 .createdAt(message.getCreatedAt())
                 .build();
     }

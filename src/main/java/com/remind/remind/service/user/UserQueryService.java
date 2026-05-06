@@ -46,29 +46,42 @@ public class UserQueryService {
 
     // 테스트용 및 구글 토큰 검증
     public String verifyGoogleIdToken(String idTokenString) {
-        // 테스트용 패턴 허용
-        if (idTokenString != null && (idTokenString.equals("test-token") || idTokenString.equals("test") || idTokenString.startsWith("google_test_token"))) {
+        if (idTokenString == null || idTokenString.isBlank()) {
+            throw new BaseException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // 개발 모드이거나, 토큰 형식이 JWT가 아닌 경우 (점 '.'이 2개 미만인 경우) 테스트용으로 간주
+        if (isDevelopmentMode() || isProbablyMockToken(idTokenString)) {
             return idTokenString + "@example.com";
         }
 
-        // 클라이언트 ID가 없으면 테스트 이메일 반환
-        if (googleClientId == null || googleClientId.isEmpty()) {
-            return "mock@example.com";
-        }
-
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
-
         try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
             GoogleIdToken idToken = verifier.verify(idTokenString);
             if (idToken != null) {
                 return idToken.getPayload().getEmail();
             } else {
                 throw new BaseException(ErrorCode.INVALID_TOKEN);
             }
-        } catch (GeneralSecurityException | IOException e) {
-            throw new BaseException(ErrorCode.TOKEN_VERIFICATION_FAILED);
+        } catch (Exception e) {
+            // 형식이 JWT여서 검증을 시도했으나 실패한 경우
+            System.err.println("Real Token Verification Failed: " + e.getMessage());
+            throw new BaseException(ErrorCode.INVALID_TOKEN);
         }
+    }
+
+    private boolean isDevelopmentMode() {
+        boolean isRealConfig = googleClientId != null && googleClientId.contains(".apps.googleusercontent.com");
+        return !isRealConfig;
+    }
+
+    private boolean isProbablyMockToken(String token) {
+        // 실제 구글 ID 토큰(JWT)은 점(.)이 2개 포함된 'header.payload.signature' 구조입니다.
+        // 점이 없거나 1개뿐이라면 테스트용 짧은 문자열(remind123 등)로 판단합니다.
+        long dotCount = token.chars().filter(ch -> ch == '.').count();
+        return dotCount < 2;
     }
 }
