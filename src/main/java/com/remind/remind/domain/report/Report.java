@@ -27,6 +27,12 @@ public class Report {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(nullable = false)
+    private java.time.LocalDate startDate;
+
+    @Column(nullable = false)
+    private java.time.LocalDate endDate;
+
     @Column(columnDefinition = "TEXT")
     private String content;
 
@@ -35,8 +41,10 @@ public class Report {
     private LocalDateTime createdAt;
 
     @Builder
-    public Report(User user, String content) {
+    public Report(User user, java.time.LocalDate startDate, java.time.LocalDate endDate, String content) {
         this.user = user;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.content = content;
     }
 }

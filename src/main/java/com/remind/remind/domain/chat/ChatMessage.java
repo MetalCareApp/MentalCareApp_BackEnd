@@ -32,20 +32,20 @@ public class ChatMessage {
     private ChatMessageRole role;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String message;
+    private String content;
 
     @Column(nullable = false)
-    private boolean hasRisk;
+    private boolean isRisk;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    public ChatMessage(User user, ChatMessageRole role, String message, boolean hasRisk) {
+    public ChatMessage(User user, ChatMessageRole role, String content, boolean isRisk) {
         this.user = user;
         this.role = role;
-        this.message = message;
-        this.hasRisk = hasRisk;
+        this.content = content;
+        this.isRisk = isRisk;
     }
 }
