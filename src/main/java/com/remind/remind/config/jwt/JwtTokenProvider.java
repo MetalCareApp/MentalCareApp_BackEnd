@@ -34,9 +34,9 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰 생성
-    public String createToken(Long userId, String username, String role) {
+    public String createToken(Long userId, String email, String role) {
         Claims claims = Jwts.claims()
-                .subject(username)
+                .subject(email)
                 .add("id", userId)      // AI 서버 식별용 유저 ID
                 .add("role", role)      // AI 서버 권한 체크용 역할
                 .build();
@@ -54,12 +54,12 @@ public class JwtTokenProvider {
 
     // JWT 토큰에서 인증 정보 조회
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getUsername(token));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getEmail(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    // 토큰에서 회원 추출
-    public String getUsername(String token) {
+    // 토큰에서 이메일 추출
+    public String getEmail(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()

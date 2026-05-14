@@ -5,12 +5,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -24,11 +26,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         // 유효한 토큰인지 확인
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            // 토큰이 유효하면 토큰으로부터 유저 정보를 받아와서 Authentication 객체를 만듦
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
-            // SecurityContext 에 Authentication 객체를 저장
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (token != null) {
+            if (jwtTokenProvider.validateToken(token)) {
+                // 토큰이 유효하면 토큰으로부터 유저 정보를 받아와서 Authentication 객체를 만듦
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                // SecurityContext 에 Authentication 객체를 저장
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("JWT Token authenticated for: {}", authentication.getName());
+            } else {
+                log.warn("Invalid JWT Token provided: {}", token);
+            }
         }
         filterChain.doFilter(request, response);
     }
