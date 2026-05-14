@@ -37,7 +37,7 @@ public class Doctor {
     private String specialization; // 전공 (선택 사항)
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL)
-    private List<Mapping> patients = new ArrayList<>();
+    private List<Match> patients = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

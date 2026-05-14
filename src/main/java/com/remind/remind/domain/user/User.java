@@ -24,13 +24,13 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true, length = 100)
-    private String username;
+    private String email;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false, length = 100)
-    private String nickname;
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -49,10 +49,10 @@ public class User {
     private LocalDateTime createdAt;
 
     @Builder
-    public User(String username, String password, String nickname, Role role, String phone, LocalDate birthDate, Gender gender) {
-        this.username = username;
+    public User(String email, String password, String name, Role role, String phone, LocalDate birthDate, Gender gender) {
+        this.email = email;
         this.password = password;
-        this.nickname = nickname;
+        this.name = name;
         this.role = role;
         this.phone = phone;
         this.birthDate = birthDate;
