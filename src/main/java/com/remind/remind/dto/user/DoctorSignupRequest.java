@@ -19,14 +19,14 @@ public class DoctorSignupRequest {
     private String specialization;
 
     // 첫 연결 환자 정보 (선택 사항)
-    private String patientUsername;
+    private String patientEmail;
 
     public DoctorSignupRequest(String hospitalName, String hospitalAddress, String hospitalPhone, 
-                               String specialization, String patientUsername) {
+                               String specialization, String patientEmail) {
         this.hospitalName = hospitalName;
         this.hospitalAddress = hospitalAddress;
         this.hospitalPhone = hospitalPhone;
         this.specialization = specialization;
-        this.patientUsername = patientUsername;
+        this.patientEmail = patientEmail;
     }
 }

@@ -14,7 +14,7 @@ public class SignupRequest {
     @NotBlank(message = "구글 ID 토큰은 필수입니다.")
     private String idToken;
 
-    private String nickname;
+    private String name;
 
     private String phone;
 
