@@ -31,8 +31,20 @@ public class ReportCommandService {
     private final DiaryRepository diaryRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${chatbot.api.report-url}")
-    private String reportApiUrl;
+    @Value("${ai.server.url}")
+    private String aiServerUrl;
+
+    /**
+     * AI 서버 리포트 응답을 담기 위한 DTO
+     */
+    @lombok.Setter
+    @lombok.Getter
+    @lombok.NoArgsConstructor
+    private static class AiReportResponse {
+        private String summary;
+        private String message;
+        private String answer;
+    }
 
     public ReportResponse createAiReport(Long userId, ReportCreateRequest request) {
         User user = userRepository.findById(userId)
@@ -67,18 +79,19 @@ public class ReportCommandService {
         aiRequest.put("diary_logs", diaryLogs);
 
         try {
-            // AI 서버 호출 (POST /ai/report)
-            Map<String, Object> aiResponse = restTemplate.postForObject(reportApiUrl, aiRequest, Map.class);
+            // AI 서버 호출 (POST {aiServerUrl}/ai/report)
+            String reportApiUrl = aiServerUrl + "/ai/report";
+            AiReportResponse aiResponse = restTemplate.postForObject(reportApiUrl, aiRequest, AiReportResponse.class);
             
             String content = "리포트를 생성할 수 없습니다.";
             if (aiResponse != null) {
                 // specification: AI서버 -> 백 { "summary": "..." }
-                if (aiResponse.get("summary") != null) {
-                    content = String.valueOf(aiResponse.get("summary"));
-                } else if (aiResponse.get("message") != null) {
-                    content = String.valueOf(aiResponse.get("message"));
-                } else if (aiResponse.get("answer") != null) {
-                    content = String.valueOf(aiResponse.get("answer"));
+                if (aiResponse.getSummary() != null) {
+                    content = aiResponse.getSummary();
+                } else if (aiResponse.getMessage() != null) {
+                    content = aiResponse.getMessage();
+                } else if (aiResponse.getAnswer() != null) {
+                    content = aiResponse.getAnswer();
                 }
             }
 
@@ -91,7 +104,7 @@ public class ReportCommandService {
 
             return ReportResponse.from(reportRepository.save(report));
         } catch (Exception e) {
-            // 에러 시 로깅 (실제 서비스 시 Logger 사용 권장)
+            // 에러 시 로깅
             System.err.println("AI Report Generation Error: " + e.getMessage());
             throw new BaseException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
