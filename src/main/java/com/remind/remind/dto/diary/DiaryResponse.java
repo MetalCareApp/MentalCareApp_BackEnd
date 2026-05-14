@@ -17,7 +17,6 @@ public class DiaryResponse {
 
     private Long id;
     private LocalDate diaryDate;
-    private String title;
     private String content;
     private Emotion emotion;
     private int emotionScore;
@@ -33,7 +32,6 @@ public class DiaryResponse {
         return DiaryResponse.builder()
                 .id(diary.getId())
                 .diaryDate(diary.getDiaryDate())
-                .title(diary.getTitle())
                 .content(diary.getContent())
                 .emotion(diary.getEmotion())
                 .emotionScore(diary.getEmotion().getScore())

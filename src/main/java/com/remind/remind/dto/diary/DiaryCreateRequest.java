@@ -16,9 +16,6 @@ public class DiaryCreateRequest {
     @NotNull(message = "작성 날짜는 필수입니다.")
     private LocalDate diaryDate;
 
-    @NotBlank(message = "제목은 필수입니다.")
-    private String title;
-
     @NotBlank(message = "내용은 필수입니다.")
     private String content;
 
@@ -35,10 +32,9 @@ public class DiaryCreateRequest {
 
     private String medicationReaction;
 
-    public DiaryCreateRequest(LocalDate diaryDate, String title, String content, Emotion emotion, 
+    public DiaryCreateRequest(LocalDate diaryDate, String content, Emotion emotion, 
                               LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean medicationTaken, String medicationReaction) {
         this.diaryDate = diaryDate;
-        this.title = title;
         this.content = content;
         this.emotion = emotion;
         this.sleepStartTime = sleepStartTime;

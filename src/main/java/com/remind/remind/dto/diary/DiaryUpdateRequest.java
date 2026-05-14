@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 public class DiaryUpdateRequest {
 
     private LocalDate diaryDate;
-    private String title;
     private String content;
     private Emotion emotion;
     private LocalDateTime sleepStartTime;
@@ -20,10 +19,9 @@ public class DiaryUpdateRequest {
     private Boolean medicationTaken;
     private String medicationReaction;
 
-    public DiaryUpdateRequest(LocalDate diaryDate, String title, String content, Emotion emotion, 
+    public DiaryUpdateRequest(LocalDate diaryDate, String content, Emotion emotion, 
                               LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, Boolean medicationTaken, String medicationReaction) {
         this.diaryDate = diaryDate;
-        this.title = title;
         this.content = content;
         this.emotion = emotion;
         this.sleepStartTime = sleepStartTime;
