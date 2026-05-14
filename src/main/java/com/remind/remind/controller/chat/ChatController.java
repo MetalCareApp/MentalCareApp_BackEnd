@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/chats")
+@RequestMapping("/ai/chat")
 public class ChatController {
 
     private final ChatCommandService chatCommandService;
@@ -34,7 +34,7 @@ public class ChatController {
         chatCommandService.saveUserMessage(principalDetails.getUser().getId(), request);
         
         // 2. AI 서버 호출 및 답변 저장 (session_id는 내부적으로 처리)
-        ChatResponse aiResponse = chatCommandService.callAiAndSaveResponse(principalDetails.getUser().getId(), request.getMessage());
+        ChatResponse aiResponse = chatCommandService.callAiAndSaveResponse(principalDetails.getUser().getId(), request.getQuestion());
         
         return ResponseEntity.status(HttpStatus.CREATED).body(aiResponse);
     }

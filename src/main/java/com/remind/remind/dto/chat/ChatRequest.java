@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChatRequest {
     @NotBlank(message = "대화 내용은 필수입니다.")
-    private String message;
+    private String question;
 }

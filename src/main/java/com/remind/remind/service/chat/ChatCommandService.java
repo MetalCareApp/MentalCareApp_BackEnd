@@ -28,22 +28,33 @@ public class ChatCommandService {
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${chatbot.api.url}")
-    private String chatbotApiUrl;
+    @Value("${ai.server.url}")
+    private String aiServerUrl;
 
     // 간단한 위험 키워드 목록 (실제 서비스 시 고도화 필요)
     private static final List<String> RISK_KEYWORDS = Arrays.asList("죽고 싶어", "자해", "살기 싫어", "죽음", "자살");
+
+    /**
+     * AI 서버 응답을 담기 위한 DTO
+     */
+    @lombok.Setter
+    @lombok.Getter
+    @lombok.NoArgsConstructor
+    private static class AiChatResponse {
+        private String answer;
+        private Boolean is_risk;
+    }
 
     public ChatResponse saveUserMessage(Long userId, ChatRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        boolean isRisk = detectRisk(request.getMessage());
+        boolean isRisk = detectRisk(request.getQuestion());
 
         ChatMessage message = ChatMessage.builder()
                 .user(user)
                 .role(ChatMessageRole.USER)
-                .content(request.getMessage())
+                .content(request.getQuestion())
                 .isRisk(isRisk)
                 .build();
 
@@ -51,31 +62,27 @@ public class ChatCommandService {
     }
 
     public ChatResponse callAiAndSaveResponse(Long userId, String userQuestion) {
-        // AI 서버로 보낼 요청 데이터 구성 (session_id는 사용자 ID 사용 - int/long 형식)
+        // AI 서버로 보낼 요청 데이터 구성 (session_id는 사용자 ID 사용 - String 형식으로 변환)
         Map<String, Object> aiRequest = new java.util.HashMap<>();
         aiRequest.put("question", userQuestion);
-        aiRequest.put("session_id", userId);
+        aiRequest.put("session_id", String.valueOf(userId));
 
         try {
-            // AI 서버 호출 (POST /ai/chat)
-            Map<String, Object> aiResponse = restTemplate.postForObject(chatbotApiUrl, aiRequest, Map.class);
+            // AI 서버 호출 (POST {aiServerUrl}/ai/chat)
+            String chatApiUrl = aiServerUrl + "/ai/chat";
+            AiChatResponse aiResponse = restTemplate.postForObject(chatApiUrl, aiRequest, AiChatResponse.class);
             
             String answer = "죄송합니다. 답변을 생성하지 못했습니다.";
             boolean isRisk = false;
 
             if (aiResponse != null) {
                 // specification: AI서버 -> 백 { "answer": "...", "is_risk": boolean }
-                if (aiResponse.get("answer") != null) {
-                    answer = String.valueOf(aiResponse.get("answer"));
+                if (aiResponse.getAnswer() != null) {
+                    answer = aiResponse.getAnswer();
                 }
                 
-                if (aiResponse.get("is_risk") != null) {
-                    Object riskValue = aiResponse.get("is_risk");
-                    if (riskValue instanceof Boolean) {
-                        isRisk = (Boolean) riskValue;
-                    } else if (riskValue instanceof String) {
-                        isRisk = "T".equalsIgnoreCase((String) riskValue) || "true".equalsIgnoreCase((String) riskValue);
-                    }
+                if (aiResponse.getIs_risk() != null) {
+                    isRisk = aiResponse.getIs_risk();
                 }
             }
 
