@@ -8,7 +8,7 @@ import com.remind.remind.dto.user.TokenResponse;
 import com.remind.remind.exception.BaseException;
 import com.remind.remind.exception.ErrorCode;
 import com.remind.remind.repository.hospital.HospitalRepository;
-import com.remind.remind.repository.user.MappingRepository;
+import com.remind.remind.repository.user.MatchRepository;
 import com.remind.remind.repository.user.DoctorRepository;
 import com.remind.remind.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import com.remind.remind.dto.user.MappingRequest;
-import com.remind.remind.dto.user.MappingResponse;
+import com.remind.remind.dto.user.MatchRequest;
+import com.remind.remind.dto.user.MatchResponse;
 import java.util.List;
 
 @Service
@@ -28,52 +28,52 @@ public class DoctorCommandService {
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
     private final HospitalRepository hospitalRepository;
-    private final MappingRepository mappingRepository;
+    private final MatchRepository matchRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 의사가 환자에게 매칭 요청 전송
      */
-    public MappingResponse requestMatching(Long currentUserId, MappingRequest request) {
+    public MatchResponse requestMatching(Long currentUserId, MatchRequest request) {
         Doctor doctor = doctorRepository.findByUserId(currentUserId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        return requestPatientMapping(doctor, request.getPatientEmail().trim());
+        return requestPatientMatch(doctor, request.getPatientEmail().trim());
     }
 
     /**
      * 매칭 상태 변경 (수락/거절)
      */
-    public MappingResponse updateMappingStatus(Long mappingId, MappingStatus status, Long currentUserId) {
-        Mapping mapping = mappingRepository.findById(mappingId)
-                .orElseThrow(() -> new BaseException(ErrorCode.MAPPING_NOT_FOUND));
+    public MatchResponse updateMatchStatus(Long matchId, MatchStatus status, Long currentUserId) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MATCH_NOT_FOUND));
 
         // 권한 체크: 수락/거절은 해당 환자만 가능
-        if (!mapping.getPatient().getId().equals(currentUserId)) {
+        if (!match.getPatient().getId().equals(currentUserId)) {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
 
-        mapping.updateStatus(status);
-        return MappingResponse.from(mapping);
+        match.updateStatus(status);
+        return MatchResponse.from(match);
     }
 
     /**
      * 매칭 삭제 (연결 해제)
      */
-    public void deleteMapping(Long mappingId, Long currentUserId) {
-        Mapping mapping = mappingRepository.findById(mappingId)
-                .orElseThrow(() -> new BaseException(ErrorCode.MAPPING_NOT_FOUND));
+    public void deleteMatch(Long matchId, Long currentUserId) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new BaseException(ErrorCode.MATCH_NOT_FOUND));
 
         // 권한 체크: 당사자(의사 또는 환자)만 삭제 가능
         boolean isDoctorOwner = doctorRepository.findByUserId(currentUserId)
-                .map(d -> d.getId().equals(mapping.getDoctor().getId())).orElse(false);
-        boolean isPatientOwner = mapping.getPatient().getId().equals(currentUserId);
+                .map(d -> d.getId().equals(match.getDoctor().getId())).orElse(false);
+        boolean isPatientOwner = match.getPatient().getId().equals(currentUserId);
 
         if (!isDoctorOwner && !isPatientOwner) {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
 
-        mappingRepository.delete(mapping);
+        matchRepository.delete(match);
     }
 
     /**
@@ -101,12 +101,12 @@ public class DoctorCommandService {
         Doctor savedDoctor = doctorRepository.save(doctor);
 
         // 3. 환자 연결 시도 (입력된 경우에만 진행)
-        if (StringUtils.hasText(request.getPatientUsername())) {
-            requestPatientMapping(savedDoctor, request.getPatientUsername().trim());
+        if (StringUtils.hasText(request.getPatientEmail())) {
+            requestPatientMatch(savedDoctor, request.getPatientEmail().trim());
         }
 
         // 4. 역할 승격 토큰 발급
-        String token = jwtTokenProvider.createToken(user.getId(), user.getUsername(), user.getRole().name());
+        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole().name());
         return TokenResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
@@ -114,27 +114,27 @@ public class DoctorCommandService {
     }
 
     /**
-     * 환자 매핑 요청 로직 (재사용을 위해 분리)
+     * 환자 매칭 요청 로직 (재사용을 위해 분리)
      */
-    public MappingResponse requestPatientMapping(Doctor doctor, String patientEmail) {
-        if (doctor.getUser().getUsername().equalsIgnoreCase(patientEmail)) {
+    public MatchResponse requestPatientMatch(Doctor doctor, String patientEmail) {
+        if (doctor.getUser().getEmail().equalsIgnoreCase(patientEmail)) {
             throw new BaseException(ErrorCode.INVALID_PATIENT);
         }
 
-        User patient = userRepository.findByUsername(patientEmail)
+        User patient = userRepository.findByEmail(patientEmail)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        if (mappingRepository.existsByDoctorIdAndPatientId(doctor.getId(), patient.getId())) {
+        if (matchRepository.existsByDoctorIdAndPatientId(doctor.getId(), patient.getId())) {
             throw new BaseException(ErrorCode.ALREADY_MAPPED);
         }
 
-        Mapping mapping = Mapping.builder()
+        Match match = Match.builder()
                 .doctor(doctor)
                 .patient(patient)
-                .status(MappingStatus.PENDING)
+                .status(MatchStatus.PENDING)
                 .build();
 
-        return MappingResponse.from(mappingRepository.save(mapping));
+        return MatchResponse.from(matchRepository.save(match));
     }
 
     private Hospital findOrCreateHospital(String name, String address, String phone) {
