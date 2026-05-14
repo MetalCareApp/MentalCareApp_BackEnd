@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -26,46 +27,50 @@ public class UserCommandService {
     private final UserQueryService userQueryService;
 
     public TokenResponse loginOrSignup(String idToken) {
-        String email = userQueryService.verifyGoogleIdToken(idToken);
+        Map<String, String> userInfo = userQueryService.verifyGoogleIdToken(idToken);
+        String email = userInfo.get("email");
+        String googleName = userInfo.get("name");
 
         // 유저가 존재하면 로그인, 없으면 회원가입 진행
-        User user = userRepository.findByUsername(email)
+        User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
-                    // 신규 유저 생성 (닉네임 기본값: 이메일 앞자리)
-                    String defaultNickname = email.split("@")[0];
+                    // 신규 유저 생성 (구글 이름 사용, 없으면 이메일 앞자리)
                     return userRepository.save(User.builder()
-                            .username(email)
+                            .email(email)
                             .password(passwordEncoder.encode(UUID.randomUUID().toString()))
-                            .nickname(defaultNickname)
+                            .name(googleName)
                             .role(Role.USER)
                             .build());
                 });
 
         // 토큰 발급
-        String token = jwtTokenProvider.createToken(user.getId(), user.getUsername(), user.getRole().name());
+        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole().name());
         return TokenResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
                 .build();
     }
 
+    /*
     public TokenResponse signup(SignupRequest request) {
-        String email = userQueryService.verifyGoogleIdToken(request.getIdToken());
+        Map<String, String> userInfo = userQueryService.verifyGoogleIdToken(request.getIdToken());
+        String email = userInfo.get("email");
+        String googleName = userInfo.get("name");
 
-        if (userRepository.existsByUsername(email)) {
+        if (userRepository.existsByEmail(email)) {
             throw new BaseException(ErrorCode.ALREADY_REGISTERED);
         }
 
-        // 닉네임이 없을 경우 이메일 앞부분을 기본값으로 사용
-        String nickname = request.getNickname();
-        if (nickname == null || nickname.isBlank()) {
-            nickname = email.split("@")[0];
+        // 이름이 요청에 없으면 구글 이름 사용
+        String name = request.getName();
+        if (name == null || name.isBlank()) {
+            name = googleName;
         }
 
         User user = User.builder()
-                .username(email)
+                .email(email)
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))
-                .nickname(nickname)
+                .name(name)
                 .role(Role.USER)
                 .phone(request.getPhone())
                 .birthDate(request.getBirthDate())
@@ -74,10 +79,11 @@ public class UserCommandService {
 
         User savedUser = userRepository.save(user);
 
-        String token = jwtTokenProvider.createToken(savedUser.getId(), savedUser.getUsername(), savedUser.getRole().name());
+        String token = jwtTokenProvider.createToken(savedUser.getId(), savedUser.getEmail(), savedUser.getRole().name());
         return TokenResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
                 .build();
     }
+    */
 }

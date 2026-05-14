@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +33,13 @@ public class UserQueryService {
     private String googleClientId;
 
     public TokenResponse login(LoginRequest request) {
-        String email = verifyGoogleIdToken(request.getIdToken());
+        Map<String, String> userInfo = verifyGoogleIdToken(request.getIdToken());
+        String email = userInfo.get("email");
 
-        User user = userRepository.findByUsername(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        String token = jwtTokenProvider.createToken(user.getId(), user.getUsername(), user.getRole().name());
+        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole().name());
         return TokenResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
@@ -45,14 +47,17 @@ public class UserQueryService {
     }
 
     // 테스트용 및 구글 토큰 검증
-    public String verifyGoogleIdToken(String idTokenString) {
+    public Map<String, String> verifyGoogleIdToken(String idTokenString) {
         if (idTokenString == null || idTokenString.isBlank()) {
             throw new BaseException(ErrorCode.INVALID_TOKEN);
         }
 
         // 개발 모드이거나, 토큰 형식이 JWT가 아닌 경우 (점 '.'이 2개 미만인 경우) 테스트용으로 간주
         if (isDevelopmentMode() || isProbablyMockToken(idTokenString)) {
-            return idTokenString + "@example.com";
+            return Map.of(
+                "email", idTokenString + "@example.com",
+                "name", idTokenString // 테스트 시에는 토큰 문자열 자체를 이름으로 사용
+            );
         }
 
         try {
@@ -62,7 +67,15 @@ public class UserQueryService {
 
             GoogleIdToken idToken = verifier.verify(idTokenString);
             if (idToken != null) {
-                return idToken.getPayload().getEmail();
+                GoogleIdToken.Payload payload = idToken.getPayload();
+                String email = payload.getEmail();
+                String name = (String) payload.get("name"); // 구글에서 이름 추출
+                if (name == null) name = email.split("@")[0]; // 이름 없으면 이메일 앞자리
+
+                return Map.of(
+                    "email", email,
+                    "name", name
+                );
             } else {
                 throw new BaseException(ErrorCode.INVALID_TOKEN);
             }

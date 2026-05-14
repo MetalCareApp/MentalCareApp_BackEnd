@@ -26,11 +26,13 @@ public class UserController {
     private final UserCommandService userCommandService;
     private final DoctorQueryService doctorQueryService;
 
+    /*
     @PostMapping("/signup")
     public ResponseEntity<TokenResponse> signup(@Valid @RequestBody SignupRequest request) {
         TokenResponse response = userCommandService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    */
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -46,9 +48,10 @@ public class UserController {
         
         User user = principalDetails.getUser();
         UserMeResponse.UserMeResponseBuilder responseBuilder = UserMeResponse.builder()
-                .nickname(user.getNickname())
+                .userId(user.getId())
+                .name(user.getName())
                 .role(user.getRole().name())
-                .username(user.getUsername());
+                .email(user.getEmail());
 
         // 의사일 경우 상세 정보 추가
         if (user.isDoctor()) {
