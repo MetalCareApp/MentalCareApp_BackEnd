@@ -24,9 +24,6 @@ public class Diary {
     @Column(name = "diary_id")
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String title;
-
     @Column(nullable = false)
     private java.time.LocalDate diaryDate;
 
@@ -65,9 +62,8 @@ public class Diary {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Diary(String title, java.time.LocalDate diaryDate, String content, Emotion emotion, LocalDateTime sleepStartTime, 
+    public Diary(java.time.LocalDate diaryDate, String content, Emotion emotion, LocalDateTime sleepStartTime, 
                  LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken, String medicationReaction, User user) {
-        this.title = title;
         this.diaryDate = diaryDate;
         this.content = content;
         this.emotion = emotion;
@@ -79,9 +75,8 @@ public class Diary {
         this.user = user;
     }
 
-    public void update(String title, java.time.LocalDate diaryDate, String content, Emotion emotion, 
+    public void update(java.time.LocalDate diaryDate, String content, Emotion emotion, 
                        LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean isMedicationTaken, String medicationReaction) {
-        this.title = title;
         this.diaryDate = diaryDate;
         this.content = content;
         this.emotion = emotion;
