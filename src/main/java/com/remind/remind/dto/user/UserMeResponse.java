@@ -8,9 +8,10 @@ import lombok.Getter;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserMeResponse {
-    private String nickname;
+    private Long userId;
+    private String name;
     private String role;
-    private String username;
+    private String email;
     private DoctorInfoResponse doctorInfo;
 
     @Getter
