@@ -33,7 +33,6 @@ public class DiaryCommandService {
         long totalSleepMinutes = Duration.between(request.getSleepStartTime(), request.getSleepEndTime()).toMinutes();
 
         Diary diary = Diary.builder()
-                .title(request.getTitle())
                 .diaryDate(request.getDiaryDate())
                 .content(request.getContent())
                 .emotion(request.getEmotion())
@@ -57,7 +56,6 @@ public class DiaryCommandService {
         }
 
         // 값 병합 (null이 아닌 값만 우선 적용)
-        String title = request.getTitle() != null ? request.getTitle() : diary.getTitle();
         LocalDate diaryDate = request.getDiaryDate() != null ? request.getDiaryDate() : diary.getDiaryDate();
         String content = request.getContent() != null ? request.getContent() : diary.getContent();
         Emotion emotion = request.getEmotion() != null ? request.getEmotion() : diary.getEmotion();
@@ -67,7 +65,7 @@ public class DiaryCommandService {
         String reaction = request.getMedicationReaction() != null ? request.getMedicationReaction() : diary.getMedicationReaction();
 
         // 엔티티 내부에서 수면 시간 재계산 처리
-        diary.update(title, diaryDate, content, emotion, start, end, medication, reaction);
+        diary.update(diaryDate, content, emotion, start, end, medication, reaction);
 
         return DiaryResponse.from(diary);
     }
