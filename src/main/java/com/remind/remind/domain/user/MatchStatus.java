@@ -1,5 +1,5 @@
 package com.remind.remind.domain.user;
 
-public enum MappingStatus {
+public enum MatchStatus {
     PENDING, ACCEPTED, REJECTED
 }

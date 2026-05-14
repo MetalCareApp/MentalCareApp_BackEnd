@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mappings")
-public class Mapping {
+@Table(name = "matches")
+public class Match {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "mapping_id")
+    @Column(name = "match_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,20 +32,20 @@ public class Mapping {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MappingStatus status; // PENDING, ACCEPTED, REJECTED
+    private MatchStatus status; // PENDING, ACCEPTED, REJECTED
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    public Mapping(Doctor doctor, User patient, MappingStatus status) {
+    public Match(Doctor doctor, User patient, MatchStatus status) {
         this.doctor = doctor;
         this.patient = patient;
         this.status = status;
     }
 
-    public void updateStatus(MappingStatus status) {
+    public void updateStatus(MatchStatus status) {
         this.status = status;
     }
 }
