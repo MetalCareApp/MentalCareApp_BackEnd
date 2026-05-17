@@ -22,14 +22,14 @@ public class DoctorController {
     private final DoctorCommandService doctorCommandService;
 
     /**
-     * 의사 회원가입 (승격)
+     * 의사 회원가입 신청 (수동 승인 대기)
      */
     @PostMapping("/signup")
-    public ResponseEntity<TokenResponse> signup(
+    public ResponseEntity<Void> signup(
             @Valid @RequestBody DoctorSignupRequest request,
             @AuthenticationPrincipal PrincipalDetails principalDetails) {
         
-        TokenResponse response = doctorCommandService.signup(principalDetails.getUser().getId(), request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        doctorCommandService.signup(principalDetails.getUser().getId(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

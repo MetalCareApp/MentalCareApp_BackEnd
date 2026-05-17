@@ -12,12 +12,12 @@ public class UserMeResponse {
     private String name;
     private String role;
     private String email;
+    private Long matchId;
     private DoctorInfoResponse doctorInfo;
 
     @Getter
     @Builder
     public static class DoctorInfoResponse {
-        private String specialization;
         private HospitalInfoResponse hospital;
         private Integer patientCount;
     }

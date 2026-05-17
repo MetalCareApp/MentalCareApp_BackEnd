@@ -8,25 +8,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DoctorSignupRequest {
 
-    // 병원 정보
+    @NotBlank(message = "의사 이름은 필수입니다.")
+    private String doctorName;
+
     @NotBlank(message = "병원 이름은 필수입니다.")
     private String hospitalName;
 
-    @NotBlank(message = "병원 주소는 필수입니다.")
-    private String hospitalAddress;
-
+    @NotBlank(message = "병원 번호는 필수입니다.")
     private String hospitalPhone;
-    private String specialization;
 
-    // 첫 연결 환자 정보 (선택 사항)
-    private String patientEmail;
-
-    public DoctorSignupRequest(String hospitalName, String hospitalAddress, String hospitalPhone, 
-                               String specialization, String patientEmail) {
+    public DoctorSignupRequest(String doctorName, String hospitalName, String hospitalPhone) {
+        this.doctorName = doctorName;
         this.hospitalName = hospitalName;
-        this.hospitalAddress = hospitalAddress;
         this.hospitalPhone = hospitalPhone;
-        this.specialization = specialization;
-        this.patientEmail = patientEmail;
     }
 }
