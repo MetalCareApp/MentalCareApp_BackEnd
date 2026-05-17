@@ -24,7 +24,9 @@ public class JwtTokenProvider {
 
     private SecretKey secretKey;
 
-    private final long tokenValidityInMilliseconds = 1000L * 60 * 60 * 24; // 24시간
+    // [TODO: 개발 종료 전 반드시 24시간으로 복구] 현재 테스트 편의를 위해 1년으로 설정됨
+    // private final long tokenValidityInMilliseconds = 1000L * 60 * 60 * 24; // 24시간
+    private final long tokenValidityInMilliseconds = 1000L * 60 * 60 * 24 * 365L; // 1년 (365일)
 
     private final UserDetailsService userDetailsService;
 
