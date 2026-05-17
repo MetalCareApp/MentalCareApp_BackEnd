@@ -12,11 +12,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "diaries")
+@SQLDelete(sql = "UPDATE diaries SET deleted_at = CURRENT_TIMESTAMP WHERE diary_id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Diary {
 
     @Id
@@ -60,6 +65,9 @@ public class Diary {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Builder
     public Diary(java.time.LocalDate diaryDate, String content, Emotion emotion, LocalDateTime sleepStartTime, 

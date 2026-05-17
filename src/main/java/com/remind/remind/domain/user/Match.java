@@ -10,11 +10,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "matches")
+@SQLDelete(sql = "UPDATE matches SET deleted_at = CURRENT_TIMESTAMP WHERE match_id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Match {
 
     @Id
@@ -32,11 +37,14 @@ public class Match {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MatchStatus status; // PENDING, ACCEPTED, REJECTED
+    private MatchStatus status; // PENDING, ACCEPT, REJECT
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Builder
     public Match(Doctor doctor, User patient, MatchStatus status) {

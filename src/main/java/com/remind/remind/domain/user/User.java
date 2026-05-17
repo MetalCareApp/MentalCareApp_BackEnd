@@ -11,11 +11,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class User {
 
     @Id
@@ -48,6 +53,9 @@ public class User {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Builder
     public User(String email, String password, String name, Role role, String phone, LocalDate birthDate, Gender gender) {
         this.email = email;
@@ -69,5 +77,10 @@ public class User {
 
     public boolean isUser() {
         return this.role == Role.USER;
+    }
+
+    public void withdraw() {
+        this.deletedAt = LocalDateTime.now();
+        this.email = this.email + "#" + System.currentTimeMillis();
     }
 }

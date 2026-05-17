@@ -1,6 +1,6 @@
 package com.remind.remind.domain.report;
 
-import com.remind.remind.domain.user.User;
+import com.remind.remind.domain.user.Match;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -11,11 +11,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "reports")
+@SQLDelete(sql = "UPDATE reports SET deleted_at = CURRENT_TIMESTAMP WHERE report_id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Report {
 
     @Id
@@ -24,8 +29,8 @@ public class Report {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "match_id", nullable = false)
+    private Match match;
 
     @Column(nullable = false)
     private java.time.LocalDate startDate;
@@ -40,9 +45,12 @@ public class Report {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Builder
-    public Report(User user, java.time.LocalDate startDate, java.time.LocalDate endDate, String content) {
-        this.user = user;
+    public Report(Match match, java.time.LocalDate startDate, java.time.LocalDate endDate, String content) {
+        this.match = match;
         this.startDate = startDate;
         this.endDate = endDate;
         this.content = content;

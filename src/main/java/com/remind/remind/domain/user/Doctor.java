@@ -13,11 +13,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "doctors")
+@SQLDelete(sql = "UPDATE doctors SET deleted_at = CURRENT_TIMESTAMP WHERE doctor_id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Doctor {
 
     @Id
@@ -33,8 +38,12 @@ public class Doctor {
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
 
-    @Column(length = 100)
-    private String specialization; // 전공 (선택 사항)
+    @Column(name = "patient_count")
+    private Integer patientCount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private MatchStatus status; // PENDING, ACCEPTED, REJECTED
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL)
     private List<Match> patients = new ArrayList<>();
@@ -43,10 +52,18 @@ public class Doctor {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Builder
-    public Doctor(User user, Hospital hospital, String specialization) {
+    public Doctor(User user, Hospital hospital, Integer patientCount, MatchStatus status) {
         this.user = user;
         this.hospital = hospital;
-        this.specialization = specialization;
+        this.patientCount = patientCount;
+        this.status = status;
+    }
+
+    public void updateStatus(MatchStatus status) {
+        this.status = status;
     }
 }
