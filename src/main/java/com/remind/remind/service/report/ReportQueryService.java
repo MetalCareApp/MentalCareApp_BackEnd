@@ -11,15 +11,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.remind.remind.domain.user.Match;
+import com.remind.remind.domain.user.MatchStatus;
+import com.remind.remind.repository.user.MatchRepository;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ReportQueryService {
 
     private final ReportRepository reportRepository;
+    private final MatchRepository matchRepository;
 
     public List<ReportResponse> getReports(Long userId) {
-        return reportRepository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
+        // 해당 유저의 수락된 매칭 확인 (여러 개일 수 있으므로 모두의 리포트 조회)
+        List<Match> matches = matchRepository.findAllByPatientIdAndStatus(userId, MatchStatus.ACCEPTED);
+        
+        return matches.stream()
+                .flatMap(match -> reportRepository.findAllByMatchIdOrderByCreatedAtDesc(match.getId()).stream())
                 .map(ReportResponse::from)
                 .collect(Collectors.toList());
     }

@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.remind.remind.domain.user.Match;
+import com.remind.remind.domain.user.MatchStatus;
+import com.remind.remind.repository.user.MatchRepository;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,6 +33,7 @@ public class ReportCommandService {
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
+    private final MatchRepository matchRepository;
     private final RestTemplate restTemplate;
 
     @Value("${ai.server.url}")
@@ -49,6 +54,12 @@ public class ReportCommandService {
     public ReportResponse createAiReport(Long userId, ReportCreateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        // 해당 유저의 수락된 매칭 확인
+        Match match = matchRepository.findAllByPatientIdAndStatus(userId, MatchStatus.ACCEPTED)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new BaseException(ErrorCode.INTERNAL_SERVER_ERROR)); // TODO: MATCH_NOT_FOUND 추가 필요
 
         // 요청으로 받은 시작일과 종료일을 사용
         List<Diary> diaries = diaryRepository.findAllByUserAndDiaryDateBetweenOrderByDiaryDateAsc(
@@ -96,7 +107,7 @@ public class ReportCommandService {
             }
 
             Report report = Report.builder()
-                    .user(user)
+                    .match(match)
                     .startDate(request.getStartDate())
                     .endDate(request.getEndDate())
                     .content(content)

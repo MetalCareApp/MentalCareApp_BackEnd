@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ReportResponse {
     private Long id;
+    private Long matchId;
     private LocalDate startDate;
     private LocalDate endDate;
     private String content;
@@ -19,6 +20,7 @@ public class ReportResponse {
     public static ReportResponse from(Report report) {
         return ReportResponse.builder()
                 .id(report.getId())
+                .matchId(report.getMatch().getId())
                 .startDate(report.getStartDate())
                 .endDate(report.getEndDate())
                 .content(report.getContent())

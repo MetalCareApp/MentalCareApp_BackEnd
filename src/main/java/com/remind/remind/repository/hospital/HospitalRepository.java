@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface HospitalRepository extends JpaRepository<Hospital, Long> {
+    Optional<Hospital> findByApiId(String apiId);
     Optional<Hospital> findByNameAndAddress(String name, String address);
+    List<Hospital> findByNameAndPhone(String name, String phone);
 
     // 이름 포함 검색
     List<Hospital> findByNameContaining(String name);
