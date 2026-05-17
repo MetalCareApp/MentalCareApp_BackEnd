@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class ExaminationResponse {
     private Long id;
     private ExaminationType type;
-    private Integer totalScore;
+    private Integer score;
     private String severity;
     private LocalDateTime createdAt;
 
@@ -20,7 +20,7 @@ public class ExaminationResponse {
         return ExaminationResponse.builder()
                 .id(examination.getId())
                 .type(examination.getType())
-                .totalScore(examination.getTotalScore())
+                .score(examination.getScore())
                 .severity(examination.getSeverity())
                 .createdAt(examination.getCreatedAt())
                 .build();

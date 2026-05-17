@@ -1,5 +1,5 @@
 package com.remind.remind.domain.examination;
 
 public enum ExaminationType {
-    PHQ9, GAD7
+    PHQ_9, GAD_7
 }

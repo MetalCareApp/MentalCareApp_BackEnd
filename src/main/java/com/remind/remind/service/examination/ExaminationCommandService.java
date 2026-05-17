@@ -28,7 +28,7 @@ public class ExaminationCommandService {
         int totalScore = calculateTotalScore(request.getScores());
         String severity = getPHQ9Severity(totalScore);
 
-        return saveExamination(userId, ExaminationType.PHQ9, totalScore, severity);
+        return saveExamination(userId, ExaminationType.PHQ_9, totalScore, severity);
     }
 
     public ExaminationResponse createGAD7(Long userId, ExaminationCreateRequest request) {
@@ -36,7 +36,7 @@ public class ExaminationCommandService {
         int totalScore = calculateTotalScore(request.getScores());
         String severity = getGAD7Severity(totalScore);
 
-        return saveExamination(userId, ExaminationType.GAD7, totalScore, severity);
+        return saveExamination(userId, ExaminationType.GAD_7, totalScore, severity);
     }
 
     private ExaminationResponse saveExamination(Long userId, ExaminationType type, int totalScore, String severity) {
@@ -46,7 +46,7 @@ public class ExaminationCommandService {
         Examination examination = Examination.builder()
                 .user(user)
                 .type(type)
-                .totalScore(totalScore)
+                .score(totalScore)
                 .severity(severity)
                 .build();
 
