@@ -11,11 +11,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "examinations")
+@SQLDelete(sql = "UPDATE examinations SET deleted_at = CURRENT_TIMESTAMP WHERE examination_id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Examination {
 
     @Id
@@ -31,8 +36,8 @@ public class Examination {
     @Column(nullable = false)
     private ExaminationType type;
 
-    @Column(nullable = false)
-    private Integer totalScore;
+    @Column(name = "score", nullable = false)
+    private Integer score;
 
     @Column(nullable = false, length = 100)
     private String severity;
@@ -41,11 +46,14 @@ public class Examination {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Builder
-    public Examination(User user, ExaminationType type, Integer totalScore, String severity) {
+    public Examination(User user, ExaminationType type, Integer score, String severity) {
         this.user = user;
         this.type = type;
-        this.totalScore = totalScore;
+        this.score = score;
         this.severity = severity;
     }
 }
