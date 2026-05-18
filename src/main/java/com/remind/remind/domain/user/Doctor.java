@@ -45,6 +45,9 @@ public class Doctor {
     @Column(nullable = false, length = 20)
     private MatchStatus status; // PENDING, ACCEPTED, REJECTED
 
+    @Column(name = "certification_image_url")
+    private String certificationImageUrl;
+
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL)
     private List<Match> patients = new ArrayList<>();
 
@@ -56,11 +59,12 @@ public class Doctor {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Doctor(User user, Hospital hospital, Integer patientCount, MatchStatus status) {
+    public Doctor(User user, Hospital hospital, Integer patientCount, MatchStatus status, String certificationImageUrl) {
         this.user = user;
         this.hospital = hospital;
         this.patientCount = patientCount;
         this.status = status;
+        this.certificationImageUrl = certificationImageUrl;
     }
 
     public void updateStatus(MatchStatus status) {
