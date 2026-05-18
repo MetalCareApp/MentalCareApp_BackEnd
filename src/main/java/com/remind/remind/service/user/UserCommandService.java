@@ -26,15 +26,26 @@ public class UserCommandService {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserQueryService userQueryService;
 
+    /**
+     * 회원 탈퇴 (Soft Delete + Email Obfuscation)
+     */
+    public void withdraw(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+        
+        user.withdraw();
+        userRepository.save(user);
+    }
+
     public TokenResponse loginOrSignup(String idToken) {
         Map<String, String> userInfo = userQueryService.verifyGoogleIdToken(idToken);
         String email = userInfo.get("email");
         String googleName = userInfo.get("name");
 
-        // 유저가 존재하면 로그인, 없으면 회원가입 진행
+        // 유저가 존재하면 로그인 (탈퇴한 계정은 @Where에 의해 걸러짐), 없으면 신규 가입
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
-                    // 신규 유저 생성 (구글 이름 사용, 없으면 이메일 앞자리)
+                    // 신규 유저 생성 (구글 이름 사용)
                     return userRepository.save(User.builder()
                             .email(email)
                             .password(passwordEncoder.encode(UUID.randomUUID().toString()))
