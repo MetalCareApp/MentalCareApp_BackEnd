@@ -42,3 +42,7 @@ gemini.md
 API 기획.csv
 ERD.png
 docs/local/
+
+# 민감한 설정 파일 (보안)
+src/main/resources/application-s3.properties
+src/main/resources/application-real.properties
