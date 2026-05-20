@@ -59,7 +59,7 @@ public class ReportCommandService {
         Match match = matchRepository.findAllByPatientIdAndStatus(userId, MatchStatus.ACCEPTED)
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new BaseException(ErrorCode.INTERNAL_SERVER_ERROR)); // TODO: MATCH_NOT_FOUND 추가 필요
+                .orElseThrow(() -> new BaseException(ErrorCode.MATCH_NOT_FOUND));
 
         // 요청으로 받은 시작일과 종료일을 사용
         List<Diary> diaries = diaryRepository.findAllByUserAndDiaryDateBetweenOrderByDiaryDateAsc(
@@ -120,5 +120,19 @@ public class ReportCommandService {
             throw new BaseException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
-}
 
+    /**
+     * 리포트 삭제 (Soft Delete)
+     */
+    public void deleteReport(Long reportId, Long userId) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new BaseException(ErrorCode.REPORT_NOT_FOUND));
+
+        // 권한 확인: 리포트의 주인이 요청자인지 확인
+        if (!report.getMatch().getPatient().getId().equals(userId)) {
+            throw new BaseException(ErrorCode.REPORT_ACCESS_DENIED);
+        }
+
+        reportRepository.delete(report);
+    }
+}

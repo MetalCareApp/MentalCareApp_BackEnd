@@ -27,6 +27,10 @@ public enum ErrorCode {
     // Hospital 관련
     HOSPITAL_NOT_FOUND(HttpStatus.NOT_FOUND, "H001", "존재하지 않는 병원입니다."),
 
+    // Report 관련
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "존재하지 않는 리포트입니다."),
+    REPORT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "R002", "해당 리포트에 대한 접근 권한이 없습니다."),
+
     // 파일 관련
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "C004", "파일 업로드 중 오류가 발생했습니다."),
 
