@@ -11,14 +11,14 @@ public interface HospitalRepository extends JpaRepository<Hospital, Long> {
     Optional<Hospital> findByNameAndAddress(String name, String address);
     List<Hospital> findByNameAndPhone(String name, String phone);
 
-    // 이름 포함 검색
-    List<Hospital> findByNameContaining(String name);
+    // [수정] 정신과 전문의가 1명이라도 있는 병원만 검색 (정제된 데이터만 노출)
+    List<Hospital> findByNameContainingAndSpecialistCountGreaterThan(String name, Integer specialistCount);
 
-    // 주소(지역) 포함 검색
-    List<Hospital> findByAddressContaining(String address);
+    List<Hospital> findByAddressContainingAndSpecialistCountGreaterThan(String address, Integer specialistCount);
 
-    // 이름과 주소 모두 포함 검색
-    List<Hospital> findByNameContainingAndAddressContaining(String name, String address);
+    List<Hospital> findByNameContainingAndAddressContainingAndSpecialistCountGreaterThan(String name, String address, Integer specialistCount);
+
+    List<Hospital> findAllBySpecialistCountGreaterThan(Integer specialistCount);
 
     // 아직 동기화되지 않은(의사 수가 0인) 병원 목록 조회
     List<Hospital> findAllBySpecialistCountAndGeneralDoctorCount(Integer specialistCount, Integer generalDoctorCount);

@@ -29,13 +29,13 @@ public class HospitalQueryService {
         List<Hospital> hospitals;
 
         if (name != null && region != null) {
-            hospitals = hospitalRepository.findByNameContainingAndAddressContaining(name, region);
+            hospitals = hospitalRepository.findByNameContainingAndAddressContainingAndSpecialistCountGreaterThan(name, region, 0);
         } else if (name != null) {
-            hospitals = hospitalRepository.findByNameContaining(name);
+            hospitals = hospitalRepository.findByNameContainingAndSpecialistCountGreaterThan(name, 0);
         } else if (region != null) {
-            hospitals = hospitalRepository.findByAddressContaining(region);
+            hospitals = hospitalRepository.findByAddressContainingAndSpecialistCountGreaterThan(region, 0);
         } else {
-            hospitals = hospitalRepository.findAll();
+            hospitals = hospitalRepository.findAllBySpecialistCountGreaterThan(0);
         }
 
         return hospitals.stream()
