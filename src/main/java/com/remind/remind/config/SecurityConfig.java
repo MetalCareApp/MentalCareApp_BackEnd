@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/static/**", "/css/**", "/js/**", "/favicon.ico").permitAll()
                         .requestMatchers("/users/signup", "/users/login").permitAll()
+                        .requestMatchers("/hospitals/admin/**").permitAll() // 데이터 동기화를 위해 임시 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll() // Swagger 허용
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 명시적 허용
                         .anyRequest().authenticated()

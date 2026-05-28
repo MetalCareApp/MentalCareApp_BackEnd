@@ -38,6 +38,21 @@ public class Hospital {
     @Column(nullable = false)
     private String address;
 
+    @Column(length = 50)
+    private String province;
+
+    @Column(length = 50)
+    private String city;
+
+    @Column(length = 50)
+    private String district;
+
+    @Column
+    private Double lat;
+
+    @Column
+    private Double lng;
+
     @Column(name = "phone", length = 20)
     private String phone;
 
@@ -62,13 +77,31 @@ public class Hospital {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Hospital(String name, String apiId, String address, String phone, LocalDate openingDate, Integer specialistCount, Integer generalDoctorCount) {
+    public Hospital(String name, String apiId, String address, String province, String city, String district, Double lat, Double lng, String phone, LocalDate openingDate, Integer specialistCount, Integer generalDoctorCount) {
         this.name = name;
         this.apiId = apiId;
         this.address = address;
+        this.province = province;
+        this.city = city;
+        this.district = district;
+        this.lat = lat;
+        this.lng = lng;
         this.phone = phone;
         this.openingDate = openingDate;
         this.specialistCount = specialistCount;
         this.generalDoctorCount = generalDoctorCount;
+    }
+
+    public void updateDoctorCounts(Integer specialistCount, Integer generalDoctorCount) {
+        this.specialistCount = (specialistCount != null) ? specialistCount : 0;
+        this.generalDoctorCount = (generalDoctorCount != null) ? generalDoctorCount : 0;
+    }
+
+    public void updateApiId(String apiId) {
+        this.apiId = apiId;
+    }
+
+    public void updateOpeningDate(LocalDate openingDate) {
+        this.openingDate = openingDate;
     }
 }
