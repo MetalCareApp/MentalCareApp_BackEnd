@@ -36,6 +36,6 @@ public class ReportQueryService {
     public ReportResponse getReport(Long reportId) {
         return reportRepository.findById(reportId)
                 .map(ReportResponse::from)
-                .orElseThrow(() -> new BaseException(ErrorCode.INTERNAL_SERVER_ERROR)); // TODO: REPORT_NOT_FOUND 추가 필요
+                .orElseThrow(() -> new BaseException(ErrorCode.REPORT_NOT_FOUND));
     }
 }

@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/reports")
 @Tag(name = "AI 리포트", description = "AI 기반 심리 분석 리포트 관리 API")
 public class ReportController {
 
@@ -26,9 +25,9 @@ public class ReportController {
     private final ReportQueryService reportQueryService;
 
     /**
-     * AI 리포트 생성
+     * AI 리포트 생성 (프론트 협의 경로: /ai/report)
      */
-    @PostMapping
+    @PostMapping("/ai/report")
     @Operation(summary = "AI 리포트 생성", description = "최근 일기 데이터를 바탕으로 AI 심리 분석 리포트를 생성합니다.")
     public ResponseEntity<ReportResponse> createReport(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
@@ -40,7 +39,7 @@ public class ReportController {
     /**
      * 내 리포트 목록 조회
      */
-    @GetMapping
+    @GetMapping("/reports")
     @Operation(summary = "내 리포트 목록 조회", description = "내가 생성한 모든 AI 리포트 목록을 최신순으로 조회합니다.")
     public ResponseEntity<List<ReportResponse>> getReports(@AuthenticationPrincipal PrincipalDetails principalDetails) {
         List<ReportResponse> responses = reportQueryService.getReports(principalDetails.getUser().getId());
@@ -50,7 +49,7 @@ public class ReportController {
     /**
      * 리포트 상세 조회
      */
-    @GetMapping("/{id}")
+    @GetMapping("/reports/{id}")
     @Operation(summary = "리포트 상세 조회", description = "특정 AI 리포트의 상세 내용을 조회합니다.")
     public ResponseEntity<ReportResponse> getReport(@PathVariable Long id) {
         ReportResponse response = reportQueryService.getReport(id);
@@ -60,7 +59,7 @@ public class ReportController {
     /**
      * 리포트 삭제
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/reports/{id}")
     @Operation(summary = "리포트 삭제", description = "특정 AI 리포트를 삭제(Soft Delete)합니다.")
     public ResponseEntity<Void> deleteReport(
             @AuthenticationPrincipal PrincipalDetails principalDetails,

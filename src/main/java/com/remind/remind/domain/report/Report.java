@@ -41,6 +41,15 @@ public class Report {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    private Integer totalScore;
+
+    private String riskLevel;
+
+    private String phq9Slots;
+
+    @Column(columnDefinition = "TEXT")
+    private String treatmentRecommendation;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -49,10 +58,16 @@ public class Report {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Report(Match match, java.time.LocalDate startDate, java.time.LocalDate endDate, String content) {
+    public Report(Match match, java.time.LocalDate startDate, java.time.LocalDate endDate, String content,
+                  Integer totalScore, String riskLevel, String phq9Slots,
+                  String treatmentRecommendation) {
         this.match = match;
         this.startDate = startDate;
         this.endDate = endDate;
         this.content = content;
+        this.totalScore = totalScore;
+        this.riskLevel = riskLevel;
+        this.phq9Slots = phq9Slots;
+        this.treatmentRecommendation = treatmentRecommendation;
     }
 }

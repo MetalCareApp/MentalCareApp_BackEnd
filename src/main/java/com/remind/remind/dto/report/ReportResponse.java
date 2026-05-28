@@ -27,6 +27,18 @@ public class ReportResponse {
     @Schema(description = "AI 분석 내용 (마크다운 등)", example = "최근 수면 패턴이 불규칙하며...")
     private String content;
 
+    @Schema(description = "PHQ-9 합계 점수", example = "15")
+    private Integer totalScore;
+
+    @Schema(description = "위험 수준", example = "High Risk")
+    private String riskLevel;
+
+    @Schema(description = "PHQ-9 각 항목별 점수", example = "[1, 3, 2, 0, 1, 2, 3, 0, 1]")
+    private String phq9Slots;
+
+    @Schema(description = "치료 권장 사항", example = "충분한 휴식과 상담 치료가 권장됩니다.")
+    private String treatmentRecommendation;
+
     @Schema(description = "생성 일시")
     private LocalDateTime createdAt;
 
@@ -37,6 +49,10 @@ public class ReportResponse {
                 .startDate(report.getStartDate())
                 .endDate(report.getEndDate())
                 .content(report.getContent())
+                .totalScore(report.getTotalScore())
+                .riskLevel(report.getRiskLevel())
+                .phq9Slots(report.getPhq9Slots())
+                .treatmentRecommendation(report.getTreatmentRecommendation())
                 .createdAt(report.getCreatedAt())
                 .build();
     }
