@@ -11,6 +11,7 @@ import com.remind.remind.repository.diary.DiaryRepository;
 import com.remind.remind.repository.report.ReportRepository;
 import com.remind.remind.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import com.remind.remind.domain.user.Match;
 import com.remind.remind.domain.user.MatchStatus;
 import com.remind.remind.repository.user.MatchRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -36,7 +38,7 @@ public class ReportCommandService {
     private final MatchRepository matchRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${ai.server.url}")
+    @Value("${ai.report.url}")
     private String aiServerUrl;
 
     /**
@@ -45,10 +47,13 @@ public class ReportCommandService {
     @lombok.Setter
     @lombok.Getter
     @lombok.NoArgsConstructor
+    @lombok.ToString
     private static class AiReportResponse {
         private String summary;
-        private String message;
-        private String answer;
+        private List<Integer> phq9_slots;
+        private Integer total_score;
+        private String risk_level;
+        private String treatment_recommendation;
     }
 
     public ReportResponse createAiReport(Long userId, ReportCreateRequest request) {
@@ -64,27 +69,30 @@ public class ReportCommandService {
         // 요청으로 받은 시작일과 종료일을 사용
         List<Diary> diaries = diaryRepository.findAllByUserAndDiaryDateBetweenOrderByDiaryDateAsc(
                 user, request.getStartDate(), request.getEndDate());
+        
+        log.info("Found {} diaries for user {} between {} and {}", diaries.size(), userId, request.getStartDate(), request.getEndDate());
 
-        // AI 서버로 보낼 diary_logs 구성
+        // AI 서버로 보낼 diary_logs 구성 (snake_case)
+        // ... (rest of logic same)
         List<Map<String, Object>> diaryLogs = diaries.stream().map(diary -> {
             Long sleepMinutes = diary.getTotalSleepMinutes() != null ? diary.getTotalSleepMinutes() : 0L;
             double sleepHours = sleepMinutes / 60.0;
             
-            Map<String, Object> log = new java.util.HashMap<>();
-            log.put("date", diary.getDiaryDate() != null ? diary.getDiaryDate().toString() : "");
-            log.put("emotion", diary.getEmotion() != null ? diary.getEmotion().name() : "");
-            log.put("sleepStart", diary.getSleepStartTime() != null ? diary.getSleepStartTime().toString() : "");
-            log.put("sleepEnd", diary.getSleepEndTime() != null ? diary.getSleepEndTime().toString() : "");
-            log.put("sleepHours", sleepHours);
-            log.put("tookMedicine", diary.isMedicationTaken());
-            log.put("medicineReaction", diary.getMedicationReaction() != null ? diary.getMedicationReaction() : "");
-            log.put("text", diary.getContent() != null ? diary.getContent() : "");
-            return log;
+            Map<String, Object> logMap = new java.util.HashMap<>();
+            logMap.put("date", diary.getDiaryDate() != null ? diary.getDiaryDate().toString() : "");
+            logMap.put("emotion", diary.getEmotion() != null ? diary.getEmotion().name() : "");
+            logMap.put("sleep_start", diary.getSleepStartTime() != null ? diary.getSleepStartTime().toString() : "");
+            logMap.put("sleep_end", diary.getSleepEndTime() != null ? diary.getSleepEndTime().toString() : "");
+            logMap.put("sleep_hours", sleepHours);
+            logMap.put("took_medicine", diary.isMedicationTaken());
+            logMap.put("medicine_reaction", diary.getMedicationReaction() != null ? diary.getMedicationReaction() : "");
+            logMap.put("diary", diary.getContent() != null ? diary.getContent() : "");
+            return logMap;
         }).collect(Collectors.toList());
 
-        // AI 서버로 보낼 전체 요청 데이터 구성
+        // AI 서버로 보낼 전체 요청 데이터 구성 (snake_case)
         Map<String, Object> aiRequest = new java.util.HashMap<>();
-        aiRequest.put("session_id", userId);
+        aiRequest.put("session_id", String.valueOf(userId));
         aiRequest.put("start_date", request.getStartDate().toString());
         aiRequest.put("end_date", request.getEndDate().toString());
         aiRequest.put("diary_logs", diaryLogs);
@@ -92,18 +100,35 @@ public class ReportCommandService {
         try {
             // AI 서버 호출 (POST {aiServerUrl}/ai/report)
             String reportApiUrl = aiServerUrl + "/ai/report";
-            AiReportResponse aiResponse = restTemplate.postForObject(reportApiUrl, aiRequest, AiReportResponse.class);
+            log.info("Requesting AI Report. URL: {}, RequestBody: {}", reportApiUrl, aiRequest);
             
+            AiReportResponse aiResponse = null;
             String content = "리포트를 생성할 수 없습니다.";
-            if (aiResponse != null) {
-                // specification: AI서버 -> 백 { "summary": "..." }
-                if (aiResponse.getSummary() != null) {
-                    content = aiResponse.getSummary();
-                } else if (aiResponse.getMessage() != null) {
-                    content = aiResponse.getMessage();
-                } else if (aiResponse.getAnswer() != null) {
-                    content = aiResponse.getAnswer();
+            try {
+                // 상세 로그를 위해 먼저 String으로 받음
+                org.springframework.http.ResponseEntity<String> responseEntity = 
+                        restTemplate.postForEntity(reportApiUrl, aiRequest, String.class);
+                
+                log.info("AI Report HTTP Status: {}", responseEntity.getStatusCode());
+                String rawBody = responseEntity.getBody();
+                log.info("AI Report Raw Response Body: {}", rawBody);
+                
+                if (rawBody != null && !rawBody.trim().isEmpty()) {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    aiResponse = mapper.readValue(rawBody, AiReportResponse.class);
+                    log.info("Parsed AI Response: {}", aiResponse);
+                    
+                    if (aiResponse != null && aiResponse.getSummary() != null) {
+                        content = aiResponse.getSummary();
+                    } else {
+                        log.warn("AI Report Summary is missing in parsed object. Raw body: {}", rawBody);
+                    }
+                } else {
+                    log.warn("AI Report Response body is empty.");
                 }
+            } catch (Exception e) {
+                log.error("AI Report Server Error (Colab/AI): {}", e.getMessage(), e);
+                content = "리포트 생성 중입니다. 잠시만 기다려주십시오.";
             }
 
             Report report = Report.builder()
@@ -111,12 +136,15 @@ public class ReportCommandService {
                     .startDate(request.getStartDate())
                     .endDate(request.getEndDate())
                     .content(content)
+                    .totalScore(aiResponse != null && aiResponse.getTotal_score() != null ? aiResponse.getTotal_score() : 0)
+                    .riskLevel(aiResponse != null && aiResponse.getRisk_level() != null ? aiResponse.getRisk_level() : "Unknown")
+                    .phq9Slots(aiResponse != null && aiResponse.getPhq9_slots() != null ? aiResponse.getPhq9_slots().toString() : "[]")
+                    .treatmentRecommendation(aiResponse != null && aiResponse.getTreatment_recommendation() != null ? aiResponse.getTreatment_recommendation() : "")
                     .build();
 
             return ReportResponse.from(reportRepository.save(report));
         } catch (Exception e) {
-            // 에러 시 로깅
-            System.err.println("AI Report Generation Error: " + e.getMessage());
+            log.error("Report generation failed: {}", e.getMessage(), e);
             throw new BaseException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
