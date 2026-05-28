@@ -28,7 +28,7 @@ public class ChatCommandService {
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${ai.server.url}")
+    @Value("${ai.chat.url}")
     private String aiServerUrl;
 
     // 간단한 위험 키워드 목록 (실제 서비스 시 고도화 필요)
