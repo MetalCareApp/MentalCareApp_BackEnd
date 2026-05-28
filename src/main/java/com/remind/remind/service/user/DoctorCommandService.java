@@ -15,9 +15,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.remind.remind.dto.user.MatchRequest;
 import com.remind.remind.dto.user.MatchResponse;
+import com.remind.remind.service.common.S3Service;
 import java.util.List;
 
 @Service
@@ -30,6 +32,7 @@ public class DoctorCommandService {
     private final HospitalRepository hospitalRepository;
     private final MatchRepository matchRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final S3Service s3Service;
 
     /**
      * 의사가 환자에게 매칭 요청 전송
@@ -133,13 +136,11 @@ public class DoctorCommandService {
 
         // 이미 신청 중인지 확인
         if (doctorRepository.findByUserId(currentUserId).isPresent()) {
-            throw new BaseException(ErrorCode.ALREADY_REGISTERED); // TODO: ALREADY_APPLIED 등의 에러코드 고려
+            throw new BaseException(ErrorCode.ALREADY_REGISTERED);
         }
 
-        // 1. 병원 데이터 조회/생성 (정보가 제한적이므로 이름과 번호로만 일단 생성/조회)
         Hospital hospital = findOrCreateHospital(request.getHospitalName(), request.getHospitalPhone());
 
-        // 2. Doctor 프로필 생성 (PENDING 상태)
         Doctor doctor = Doctor.builder()
                 .user(user)
                 .hospital(hospital)
@@ -150,18 +151,49 @@ public class DoctorCommandService {
         doctorRepository.save(doctor);
     }
 
+    /**
+     * 의사 회원가입 신청 v2 (S3 사진 업로드 포함)
+     */
+    public void signupV2(Long currentUserId, DoctorSignupRequest request, MultipartFile certificationImage) {
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.isDoctor() || doctorRepository.findByUserId(currentUserId).isPresent()) {
+            throw new BaseException(ErrorCode.ALREADY_REGISTERED);
+        }
+
+        // 1. S3 이미지 업로드
+        String imageUrl = null;
+        if (certificationImage != null && !certificationImage.isEmpty()) {
+            imageUrl = s3Service.uploadFile(certificationImage, "doctors/certifications");
+        }
+
+        // 2. 병원 데이터 조회/생성
+        Hospital hospital = findOrCreateHospital(request.getHospitalName(), request.getHospitalPhone());
+
+        // 3. Doctor 프로필 생성 (이미지 URL 포함)
+        Doctor doctor = Doctor.builder()
+                .user(user)
+                .hospital(hospital)
+                .patientCount(0)
+                .status(MatchStatus.PENDING)
+                .certificationImageUrl(imageUrl)
+                .build();
+
+        doctorRepository.save(doctor);
+    }
+
     private Hospital findOrCreateHospital(String name, String phone) {
         String trimmedName = name.trim();
 
-        // 이름과 전화번호로 병원 조회 (주소가 없으므로 제약적)
         return hospitalRepository.findByNameAndPhone(trimmedName, phone)
                 .stream().findFirst()
                 .orElseGet(() -> hospitalRepository.save(
                         Hospital.builder()
                                 .name(trimmedName)
                                 .phone(phone)
-                                .apiId("PENDING_" + System.currentTimeMillis()) // 임시 ID
-                                .address("주소 확인 필요") // 수동 승인 시 업데이트 권장
+                                .apiId("PENDING_" + System.currentTimeMillis())
+                                .address("주소 확인 필요")
                                 .build()
                 ));
     }
