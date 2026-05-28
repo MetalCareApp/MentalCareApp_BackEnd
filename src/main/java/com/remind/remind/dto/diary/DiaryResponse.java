@@ -25,6 +25,7 @@ public class DiaryResponse {
     private Long totalSleepMinutes;
     private boolean medicationTaken;
     private String medicationReaction;
+    private boolean externalStress;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -40,6 +41,7 @@ public class DiaryResponse {
                 .totalSleepMinutes(diary.getTotalSleepMinutes())
                 .medicationTaken(diary.isMedicationTaken())
                 .medicationReaction(diary.getMedicationReaction())
+                .externalStress(diary.isExternalStress())
                 .createdAt(diary.getCreatedAt())
                 .updatedAt(diary.getUpdatedAt())
                 .build();

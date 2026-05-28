@@ -54,6 +54,9 @@ public class Diary {
     @Column(columnDefinition = "TEXT")
     private String medicationReaction;
 
+    @Column(nullable = false)
+    private boolean isExternalStress;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -71,7 +74,8 @@ public class Diary {
 
     @Builder
     public Diary(java.time.LocalDate diaryDate, String content, Emotion emotion, LocalDateTime sleepStartTime, 
-                 LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken, String medicationReaction, User user) {
+                 LocalDateTime sleepEndTime, Long totalSleepMinutes, boolean isMedicationTaken, String medicationReaction, 
+                 boolean isExternalStress, User user) {
         this.diaryDate = diaryDate;
         this.content = content;
         this.emotion = emotion;
@@ -80,18 +84,28 @@ public class Diary {
         this.totalSleepMinutes = totalSleepMinutes;
         this.isMedicationTaken = isMedicationTaken;
         this.medicationReaction = medicationReaction;
+        this.isExternalStress = isExternalStress;
         this.user = user;
     }
 
     public void update(java.time.LocalDate diaryDate, String content, Emotion emotion, 
-                       LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean isMedicationTaken, String medicationReaction) {
+                       LocalDateTime sleepStartTime, LocalDateTime sleepEndTime, boolean isMedicationTaken, 
+                       String medicationReaction, boolean isExternalStress) {
         this.diaryDate = diaryDate;
         this.content = content;
         this.emotion = emotion;
         this.sleepStartTime = sleepStartTime;
-        this.sleepEndTime = sleepEndTime;
+        
+        // 수면 종료 시간이 시작 시간보다 이른 경우 (날짜가 바뀐 경우) 종료 시간을 하루 뒤로 설정
+        if (sleepEndTime.isBefore(sleepStartTime)) {
+            this.sleepEndTime = sleepEndTime.plusDays(1);
+        } else {
+            this.sleepEndTime = sleepEndTime;
+        }
+        
         this.isMedicationTaken = isMedicationTaken;
         this.medicationReaction = medicationReaction;
-        this.totalSleepMinutes = java.time.Duration.between(sleepStartTime, sleepEndTime).toMinutes();
+        this.isExternalStress = isExternalStress;
+        this.totalSleepMinutes = java.time.Duration.between(this.sleepStartTime, this.sleepEndTime).toMinutes();
     }
 }

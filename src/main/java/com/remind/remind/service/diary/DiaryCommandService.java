@@ -30,17 +30,26 @@ public class DiaryCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        long totalSleepMinutes = Duration.between(request.getSleepStartTime(), request.getSleepEndTime()).toMinutes();
+        LocalDateTime startTime = request.getSleepStartTime();
+        LocalDateTime endTime = request.getSleepEndTime();
+
+        // 수면 종료 시간이 시작 시간보다 이른 경우 (날짜가 바뀐 경우) 종료 시간을 하루 뒤로 설정
+        if (endTime.isBefore(startTime)) {
+            endTime = endTime.plusDays(1);
+        }
+
+        long totalSleepMinutes = Duration.between(startTime, endTime).toMinutes();
 
         Diary diary = Diary.builder()
                 .diaryDate(request.getDiaryDate())
                 .content(request.getContent())
                 .emotion(request.getEmotion())
-                .sleepStartTime(request.getSleepStartTime())
-                .sleepEndTime(request.getSleepEndTime())
+                .sleepStartTime(startTime)
+                .sleepEndTime(endTime)
                 .totalSleepMinutes(totalSleepMinutes)
                 .isMedicationTaken(request.isMedicationTaken())
                 .medicationReaction(request.getMedicationReaction())
+                .isExternalStress(request.isExternalStress())
                 .user(user)
                 .build();
 
@@ -63,9 +72,10 @@ public class DiaryCommandService {
         LocalDateTime end = request.getSleepEndTime() != null ? request.getSleepEndTime() : diary.getSleepEndTime();
         boolean medication = request.getMedicationTaken() != null ? request.getMedicationTaken() : diary.isMedicationTaken();
         String reaction = request.getMedicationReaction() != null ? request.getMedicationReaction() : diary.getMedicationReaction();
+        boolean externalStress = request.getExternalStress() != null ? request.getExternalStress() : diary.isExternalStress();
 
         // 엔티티 내부에서 수면 시간 재계산 처리
-        diary.update(diaryDate, content, emotion, start, end, medication, reaction);
+        diary.update(diaryDate, content, emotion, start, end, medication, reaction, externalStress);
 
         return DiaryResponse.from(diary);
     }
