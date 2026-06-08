@@ -33,7 +33,7 @@ public class Examination {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private ExaminationType type;
 
     @Column(name = "score", nullable = false)
