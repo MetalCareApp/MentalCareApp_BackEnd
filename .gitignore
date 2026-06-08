@@ -52,3 +52,9 @@ src/main/resources/application-real.properties
 
 basis.json
 response.xml
+
+# 테스트 데이터 생성 도구
+
+dummy_data.sql
+generate_stress_data.py
+stress_test_data.sql
