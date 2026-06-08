@@ -54,9 +54,15 @@ public class UserQueryService {
 
         // 개발 모드이거나, 토큰 형식이 JWT가 아닌 경우 (점 '.'이 2개 미만인 경우) 테스트용으로 간주
         if (isDevelopmentMode() || isProbablyMockToken(idTokenString)) {
+            String email = idTokenString.contains("@") ? idTokenString : idTokenString + "@example.com";
+            
+            // DB 컬럼 길이(100) 제한 대응
+            if (email.length() > 100) email = email.substring(0, 100);
+            String name = idTokenString.length() > 100 ? idTokenString.substring(0, 50) + "..." : idTokenString;
+            
             return Map.of(
-                "email", idTokenString + "@example.com",
-                "name", idTokenString // 테스트 시에는 토큰 문자열 자체를 이름으로 사용
+                "email", email,
+                "name", name
             );
         }
 

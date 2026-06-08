@@ -7,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,8 +23,8 @@ public class ChatQueryService {
                 .map(ChatResponse::from)
                 .collect(Collectors.toList());
         
-        // 최신순으로 가져온 뒤 대화 흐름을 위해 시간순으로 반전
-        Collections.reverse(history);
+        // 최근 대화 N개를 가져온 뒤, 화면 표시를 위해 시간순(Asc)으로 뒤집음
+        java.util.Collections.reverse(history);
         return history;
     }
 }
