@@ -1,5 +1,6 @@
 package com.remind.remind.service.report;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.remind.remind.domain.diary.Diary;
 import com.remind.remind.domain.report.Report;
 import com.remind.remind.domain.user.User;
@@ -48,6 +49,7 @@ public class ReportCommandService {
     @lombok.Getter
     @lombok.NoArgsConstructor
     @lombok.ToString
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private static class AiReportResponse {
         private String summary;
         private List<Integer> phq9_slots;
@@ -56,21 +58,26 @@ public class ReportCommandService {
         private String treatment_recommendation;
     }
 
-    public ReportResponse createAiReport(Long userId, ReportCreateRequest request) {
-        User user = userRepository.findById(userId)
+    public ReportResponse createAiReport(Long requesterId, ReportCreateRequest request) {
+        User requester = userRepository.findById(requesterId)
                 .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        // 해당 유저의 수락된 매칭 확인
-        Match match = matchRepository.findAllByPatientIdAndStatus(userId, MatchStatus.ACCEPTED)
-                .stream()
-                .findFirst()
+        if (!requester.isDoctor()) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 의사와 환자 사이의 수락된 매칭 확인
+        Match match = matchRepository.findByDoctorUserIdAndPatientIdAndStatus(requesterId, request.getPatientId(), MatchStatus.ACCEPTED)
                 .orElseThrow(() -> new BaseException(ErrorCode.MATCH_NOT_FOUND));
+
+        User patient = match.getPatient();
 
         // 요청으로 받은 시작일과 종료일을 사용
         List<Diary> diaries = diaryRepository.findAllByUserAndDiaryDateBetweenOrderByDiaryDateAsc(
-                user, request.getStartDate(), request.getEndDate());
+                patient, request.getStartDate(), request.getEndDate());
         
-        log.info("Found {} diaries for user {} between {} and {}", diaries.size(), userId, request.getStartDate(), request.getEndDate());
+        log.info("Doctor {} requested report for patient {}. Found {} diaries between {} and {}", 
+                requesterId, request.getPatientId(), diaries.size(), request.getStartDate(), request.getEndDate());
 
         // AI 서버로 보낼 diary_logs 구성 (snake_case)
         // ... (rest of logic same)
@@ -92,7 +99,7 @@ public class ReportCommandService {
 
         // AI 서버로 보낼 전체 요청 데이터 구성 (snake_case)
         Map<String, Object> aiRequest = new java.util.HashMap<>();
-        aiRequest.put("session_id", String.valueOf(userId));
+        aiRequest.put("session_id", String.valueOf(patient.getId()));
         aiRequest.put("start_date", request.getStartDate().toString());
         aiRequest.put("end_date", request.getEndDate().toString());
         aiRequest.put("diary_logs", diaryLogs);
@@ -142,7 +149,7 @@ public class ReportCommandService {
                     .treatmentRecommendation(aiResponse != null && aiResponse.getTreatment_recommendation() != null ? aiResponse.getTreatment_recommendation() : "")
                     .build();
 
-            return ReportResponse.from(reportRepository.save(report));
+            return ReportResponse.from(reportRepository.save(report), diaries);
         } catch (Exception e) {
             log.error("Report generation failed: {}", e.getMessage(), e);
             throw new BaseException(ErrorCode.INTERNAL_SERVER_ERROR);

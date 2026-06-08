@@ -11,6 +11,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Schema(description = "AI 리포트 생성 요청 데이터")
 public class ReportCreateRequest {
+    @NotNull(message = "대상 환자 ID는 필수입니다.")
+    @Schema(description = "대상 환자 ID", example = "2")
+    private Long patientId;
+
     @NotNull(message = "시작 날짜는 필수입니다.")
     @Schema(description = "분석 시작 날짜", example = "2024-05-01")
     private LocalDate startDate;

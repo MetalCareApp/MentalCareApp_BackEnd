@@ -12,5 +12,6 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findAllByDoctorIdAndStatus(Long doctorId, MatchStatus status);
     List<Match> findAllByPatientIdAndStatus(Long patientId, MatchStatus status);
     Optional<Match> findByDoctorIdAndPatientId(Long doctorId, Long patientId);
+    Optional<Match> findByDoctorUserIdAndPatientIdAndStatus(Long doctorUserId, Long patientId, MatchStatus status);
     boolean existsByPatientIdAndStatus(Long patientId, MatchStatus status);
 }

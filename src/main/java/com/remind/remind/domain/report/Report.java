@@ -45,9 +45,10 @@ public class Report {
 
     private String riskLevel;
 
+    @Column(name = "phq9slots")
     private String phq9Slots;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "treatment_recommendation")
     private String treatmentRecommendation;
 
     @CreatedDate

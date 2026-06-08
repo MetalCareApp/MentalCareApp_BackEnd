@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -17,6 +18,9 @@ public class ReportResponse {
 
     @Schema(description = "매칭 ID", example = "1")
     private Long matchId;
+
+    @Schema(description = "환자 이름", example = "홍길동")
+    private String patientName;
 
     @Schema(description = "분석 시작 날짜", example = "2024-05-01")
     private LocalDate startDate;
@@ -42,10 +46,40 @@ public class ReportResponse {
     @Schema(description = "생성 일시")
     private LocalDateTime createdAt;
 
-    public static ReportResponse from(Report report) {
+    @Schema(description = "일자별 상세 데이터")
+    private List<DailyDiaryDetail> dailyDetails;
+
+    @Getter
+    @Builder
+    @Schema(description = "일자별 일기 상세 정보")
+    public static class DailyDiaryDetail {
+        @Schema(description = "날짜")
+        private LocalDate date;
+        @Schema(description = "감정 점수 (1-5)")
+        private int emotionScore;
+        @Schema(description = "수면 시간 (시간 단위)")
+        private double sleepHours;
+        @Schema(description = "복약 여부")
+        private boolean medicationTaken;
+        @Schema(description = "외부 스트레스 요인 여부")
+        private boolean externalStress;
+    }
+
+    public static ReportResponse from(Report report, List<com.remind.remind.domain.diary.Diary> diaries) {
+        List<DailyDiaryDetail> dailyDetails = diaries.stream()
+                .map(diary -> DailyDiaryDetail.builder()
+                        .date(diary.getDiaryDate())
+                        .emotionScore(diary.getEmotion().getScore())
+                        .sleepHours(diary.getTotalSleepMinutes() / 60.0)
+                        .medicationTaken(diary.isMedicationTaken())
+                        .externalStress(diary.isExternalStress())
+                        .build())
+                .toList();
+
         return ReportResponse.builder()
                 .id(report.getId())
                 .matchId(report.getMatch().getId())
+                .patientName(report.getMatch().getPatient().getName())
                 .startDate(report.getStartDate())
                 .endDate(report.getEndDate())
                 .content(report.getContent())
@@ -54,6 +88,7 @@ public class ReportResponse {
                 .phq9Slots(report.getPhq9Slots())
                 .treatmentRecommendation(report.getTreatmentRecommendation())
                 .createdAt(report.getCreatedAt())
+                .dailyDetails(dailyDetails)
                 .build();
     }
 }
